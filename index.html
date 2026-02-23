@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Giordano Doces e Salgados</title>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root { --rosa: #e91e63; --laranja: #f37021; --verde: #50c800; --fundo: #fdfdfd; }
+        body { font-family: 'Montserrat', sans-serif; margin: 0; background: var(--fundo); padding-bottom: 80px; overflow-x: hidden; }
+
+        /* BANNER IGUAL À FOTO */
+        .hero-banner {
+            background: var(--rosa) url('https://i.ibb.co/v4mYmYm/image-820d13.png');
+            background-size: 80px; height: 120px; width: 100%; position: relative;
+        }
+        .logo-flutuante {
+            width: 80px; height: 80px; border-radius: 50%; border: 4px solid white;
+            position: absolute; bottom: -40px; left: 20px; background: white; z-index: 10;
+        }
+
+        .container { padding: 20px; max-width: 600px; margin: auto; display: none; }
+        .active { display: block; animation: fadeIn 0.3s; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        /* LOGIN */
+        #tela-login { text-align: center; padding-top: 100px; }
+
+        /* CARD DE PRODUTO */
+        .card { 
+            background: white; border-radius: 12px; padding: 15px; margin-bottom: 12px; 
+            display: flex; justify-content: space-between; align-items: center; 
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05); border: 1px solid #f0f0f0;
+        }
+        .info-prod strong { color: var(--rosa); font-size: 16px; display: block; }
+        .info-prod .preco { color: var(--verde); font-weight: bold; margin-top: 5px; display: block; }
+        .btn-pedir { background: var(--rosa); color: white; border: none; padding: 10px 18px; border-radius: 8px; font-weight: bold; cursor: pointer; }
+
+        /* PERFIL */
+        .status-line { border-left: 5px solid var(--rosa); padding-left: 15px; margin-bottom: 20px; }
+        .perfil-card { background: white; padding: 25px; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        .btn-sair { width: 100%; padding: 12px; background: #eee; border: none; border-radius: 10px; cursor: pointer; color: #555; font-weight: bold; margin-top: 20px; }
+
+        /* NAV INFERIOR LARANJA */
+        .bottom-nav {
+            position: fixed; bottom: 0; width: 100%; background: var(--laranja);
+            display: flex; justify-content: space-around; padding: 12px 0; z-index: 1000;
+        }
+        .nav-item { color: white; background: none; border: none; cursor: pointer; display: flex; flex-direction: column; align-items: center; font-size: 11px; }
+    </style>
+</head>
+<body>
+
+<div class="hero-banner"><img src="https://i.ibb.co/v4mYmYm/image-820d13.png" class="logo-flutuante"></div>
+
+<div id="tela-login" class="container active">
+    <h2 style="color: var(--rosa)">Olá! Giordano aqui.</h2>
+    <p>Entre com o Google para ver o cardápio:</p>
+    <div id="buttonDiv" style="display: flex; justify-content: center; margin-top: 20px;"></div>
+</div>
+
+<div id="tela-inicio" class="container">
+    <div style="margin-top: 40px; padding-bottom: 20px;">
+        <input type="text" placeholder="Buscar no Giordano..." style="width:100%; padding:12px; border-radius:25px; border:1px solid #ddd; outline:none;">
+    </div>
+    <div id="lista-produtos"></div>
+</div>
+
+<div id="tela-perfil" class="container">
+    <div class="status-line"><h2>Meu Perfil</h2></div>
+    <div class="perfil-card">
+        <p><strong>Nome:</strong> <span id="u-nome">Convidado</span></p>
+        <p><strong>E-mail:</strong> <span id="u-email">Não informado</span></p>
+        <button class="btn-sair" onclick="logout()">Sair da Conta</button>
+    </div>
+</div>
+
+<nav class="bottom-nav">
+    <button class="nav-item" onclick="navegar('inicio')"><span>🏠</span> Início</button>
+    <button class="nav-item" onclick="navegar('perfil')"><span>👤</span> Perfil</button>
+</nav>
+
+<script>
+    function handleCredentialResponse(response) {
+        const data = JSON.parse(atob(response.credential.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
+        localStorage.setItem('giordano_user', JSON.stringify({
+            nome: data.name,
+            email: data.email,
+            logado: true
+        }));
+        verificarAcesso();
+    }
+
+    window.onload = function () {
+        google.accounts.id.initialize({
+            client_id: "913103331733-7rbqskv7qtg1hqopguhiknccoviq1j7p.apps.googleusercontent.com",
+            callback: handleCredentialResponse
+        });
+        google.accounts.id.renderButton(document.getElementById("buttonDiv"), { theme: "outline", size: "large", shape: "pill" });
+        verificarAcesso();
+    };
+
+    function verificarAcesso() {
+        const user = JSON.parse(localStorage.getItem('giordano_user'));
+        if(user && user.logado) {
+            navegar('inicio');
+        } else {
+            navegar('login');
+        }
+    }
+
+    function navegar(tela) {
+        document.querySelectorAll('.container').forEach(c => c.classList.remove('active'));
+        document.getElementById('tela-' + tela).classList.add('active');
+        if(tela === 'perfil') {
+            const user = JSON.parse(localStorage.getItem('giordano_user'));
+            document.getElementById('u-nome').innerText = user.nome;
+            document.getElementById('u-email').innerText = user.email;
+        }
+    }
+
+    function logout() {
+        localStorage.removeItem('giordano_user');
+        location.reload();
+    }
+
+    // Carregar produtos estilo imagem
+    const itens = [
+        {nome: "Coxinha de Frango", preco: "15.00"},
+        {nome: "Copo Brownie Nutella", preco: "22.00"}
+    ];
+    document.getElementById('lista-produtos').innerHTML = itens.map(i => `
+        <div class="card">
+            <div class="info-prod"><strong>${i.nome}</strong><span class="preco">R$ ${i.preco}</span></div>
+            <button class="btn-pedir">Pedir</button>
+        </div>
+    `).join('');
+</script>
+</body>
+</html>
