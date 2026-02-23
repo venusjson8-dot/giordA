@@ -8,8 +8,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root { --rosa: #e91e63; --laranja: #f37021; --verde: #50c800; --fundo: #fdfdfd; }
-        body { font-family: 'Montserrat', sans-serif; margin: 0; background: var(--fundo); padding-bottom: 80px; }
+        body { font-family: 'Montserrat', sans-serif; margin: 0; background: var(--fundo); padding-bottom: 90px; }
 
+        /* HEADER IDENTIDADE VISUAL */
         .hero-banner {
             background: var(--rosa) url('https://i.ibb.co/v4mYmYm/image-820d13.png');
             background-size: 80px; height: 120px; width: 100%; position: relative;
@@ -23,29 +24,42 @@
         .active { display: block; animation: fadeIn 0.3s; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        .card { 
-            background: white; border-radius: 12px; padding: 15px; margin-bottom: 12px; 
-            display: flex; justify-content: space-between; align-items: center; 
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05); border: 1px solid #f0f0f0;
+        /* BUSCA */
+        .search-container { margin-top: 50px; padding: 0 5px; }
+        .search-input {
+            width: 100%; padding: 12px 20px; border-radius: 25px; border: 1px solid #eee;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05); outline: none; box-sizing: border-box;
         }
-        .btn-pedir { background: var(--rosa); color: white; border: none; padding: 10px 18px; border-radius: 8px; font-weight: bold; cursor: pointer; }
 
-        /* PERFIL ESTILO */
+        /* CARD DE PRODUTO COM FOTO */
+        .card { 
+            background: white; border-radius: 12px; padding: 12px; margin-bottom: 12px; 
+            display: flex; justify-content: space-between; align-items: center; 
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04); border: 1px solid #f0f0f0;
+        }
+        .prod-img { width: 60px; height: 60px; border-radius: 8px; object-fit: cover; margin-right: 12px; }
+        .info-prod strong { color: var(--rosa); font-size: 15px; display: block; }
+        .info-prod .preco { color: var(--verde); font-weight: bold; font-size: 14px; }
+        .btn-pedir { background: var(--rosa); color: white; border: none; padding: 8px 15px; border-radius: 8px; font-weight: bold; cursor: pointer; }
+
+        /* PERFIL */
         .status-line { border-left: 5px solid var(--rosa); padding-left: 15px; margin-bottom: 20px; }
         .perfil-card { background: white; padding: 25px; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
-        
-        /* BOTÃO ADMIN SECRETO */
-        #btn-admin { 
-            display: none; background: #2c3e50; color: white; padding: 15px; 
-            border-radius: 10px; text-align: center; font-weight: bold; 
-            margin-top: 10px; text-decoration: none;
-        }
 
+        /* BARRA INFERIOR */
         .bottom-nav {
             position: fixed; bottom: 0; width: 100%; background: var(--laranja);
             display: flex; justify-content: space-around; padding: 12px 0; z-index: 1000;
         }
-        .nav-item { color: white; background: none; border: none; cursor: pointer; display: flex; flex-direction: column; align-items: center; font-size: 11px; }
+        .nav-item { color: white; background: none; border: none; cursor: pointer; display: flex; flex-direction: column; align-items: center; font-size: 11px; font-family: 'Montserrat'; text-decoration: none;}
+        .nav-item span:first-child { font-size: 20px; margin-bottom: 2px; }
+
+        /* BOTÃO ADMIN */
+        #btn-admin { 
+            display: none; background: #2c3e50; color: white; padding: 12px; 
+            border-radius: 10px; text-align: center; font-weight: bold; 
+            margin-top: 20px; text-decoration: none; font-size: 13px;
+        }
     </style>
 </head>
 <body>
@@ -53,22 +67,23 @@
 <div class="hero-banner"><img src="https://i.ibb.co/v4mYmYm/image-820d13.png" class="logo-flutuante"></div>
 
 <div id="tela-inicio" class="container active">
-    <div style="margin-top: 40px; padding-bottom: 20px;">
-        <input type="text" placeholder="Buscar no Giordano..." style="width:100%; padding:12px; border-radius:25px; border:1px solid #ddd; outline:none;">
+    <div class="search-container">
+        <input type="text" class="search-input" id="search" placeholder="Buscar no Giordano..." onkeyup="filtrar()">
     </div>
+    <h2 style="font-size: 18px; color: #333; margin: 25px 0 15px 5px;">Delícias Disponíveis</h2>
     <div id="lista-produtos"></div>
 </div>
 
 <div id="tela-pedidos" class="container">
     <div class="status-line"><h2>Meus Pedidos</h2></div>
-    <div id="historico-pedidos"><p style="color:#888; text-align:center;">Você ainda não fez pedidos.</p></div>
+    <div id="historico-pedidos"></div>
 </div>
 
 <div id="tela-perfil" class="container">
     <div class="status-line"><h2>Meu Perfil</h2></div>
     
-    <div id="area-login" style="text-align: center; padding: 20px; background: white; border-radius: 15px; margin-bottom: 20px;">
-        <p>Acesse com o Google para salvar seus pedidos:</p>
+    <div id="area-login" style="text-align: center; padding: 20px; background: white; border-radius: 15px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+        <p style="font-size: 14px; color: #666;">Entre com o Google para salvar seus dados:</p>
         <div id="buttonDiv" style="display: flex; justify-content: center;"></div>
     </div>
 
@@ -78,26 +93,23 @@
         
         <a href="admin.html" id="btn-admin">🛠 ACESSAR PAINEL ADMIN</a>
         
-        <button onclick="logout()" style="width:100%; background:#eee; border:none; padding:12px; border-radius:10px; margin-top:15px; font-weight:bold; cursor:pointer;">Sair da Conta</button>
+        <button onclick="logout()" style="width:100%; background:#f0f0f0; border:none; padding:12px; border-radius:10px; margin-top:15px; font-weight:bold; cursor:pointer; color: #666;">Sair da Conta</button>
     </div>
 </div>
 
 <nav class="bottom-nav">
-    <button class="nav-item" onclick="navegar('inicio')"><span>🏠</span> Início</button>
-    <button class="nav-item" onclick="navegar('pedidos')"><span>🛒</span> Pedidos</button>
-    <button class="nav-item" onclick="navegar('perfil')"><span>👤</span> Perfil</button>
+    <button class="nav-item" onclick="navegar('inicio')"><span>🏠</span><span>Início</span></button>
+    <button class="nav-item" onclick="navegar('pedidos')"><span>🛒</span><span>Pedidos</span></button>
+    <button class="nav-item" onclick="navegar('perfil')"><span>👤</span><span>Perfil</span></button>
 </nav>
 
 <script>
     const ADMIN_EMAIL = "matheushenriquelima20234@gmail.com"; //
 
+    // LOGIN GOOGLE
     function handleCredentialResponse(response) {
         const data = JSON.parse(atob(response.credential.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
-        localStorage.setItem('giordano_user', JSON.stringify({
-            nome: data.name,
-            email: data.email,
-            logado: true
-        }));
+        localStorage.setItem('giordano_user', JSON.stringify({ nome: data.name, email: data.email, logado: true }));
         carregarPerfil();
     }
 
@@ -108,53 +120,105 @@
         });
         google.accounts.id.renderButton(document.getElementById("buttonDiv"), { theme: "outline", size: "large", shape: "pill" });
         carregarPerfil();
+        carregarProdutos();
     };
+
+    // CARREGAR PRODUTOS DO ADMIN
+    function carregarProdutos() {
+        const produtos = JSON.parse(localStorage.getItem('cardapio_giordano')) || [];
+        const lista = document.getElementById('lista-produtos');
+
+        if(produtos.length === 0) {
+            lista.innerHTML = '<p style="text-align:center; color:#888; margin-top:20px;">O cardápio está sendo preparado...</p>';
+            return;
+        }
+
+        lista.innerHTML = produtos.map(i => `
+            <div class="card">
+                <div style="display:flex; align-items:center;">
+                    <img src="${i.foto}" class="prod-img">
+                    <div class="info-prod">
+                        <strong>${i.nome}</strong>
+                        <span class="preco">R$ ${i.preco}</span>
+                    </div>
+                </div>
+                <button class="btn-pedir" onclick="fazerPedido('${i.nome}', '${i.preco}')">Pedir</button>
+            </div>
+        `).join('');
+    }
+
+    // LÓGICA DE PEDIDO (SINCRONIZA COM O ADMIN)
+    function fazerPedido(nomeProd, precoProd) {
+        const user = JSON.parse(localStorage.getItem('giordano_user'));
+        let pedidos = JSON.parse(localStorage.getItem('meusPedidosDG')) || [];
+
+        const novo = {
+            id: Date.now(),
+            cliente: user ? user.nome : "Convidado",
+            email: user ? user.email : "Visitante",
+            nome: nomeProd,
+            preco: precoProd,
+            status: 'pendente', //
+            data: new Date().toLocaleString()
+        };
+
+        pedidos.push(novo);
+        localStorage.setItem('meusPedidosDG', JSON.stringify(pedidos));
+        alert("Pedido enviado! Confira na aba 'Pedidos'.");
+    }
+
+    function carregarHistorico() {
+        const pedidos = JSON.parse(localStorage.getItem('meusPedidosDG')) || [];
+        const container = document.getElementById('historico-pedidos');
+        
+        if(pedidos.length === 0) {
+            container.innerHTML = '<p style="text-align:center; color:#888; margin-top:20px;">Você ainda não fez pedidos.</p>';
+            return;
+        }
+
+        container.innerHTML = pedidos.slice().reverse().map(p => `
+            <div style="background: white; padding: 15px; border-radius: 12px; margin-bottom: 10px; border-left: 5px solid var(--laranja); box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+                <div style="display:flex; justify-content:space-between;">
+                    <strong>${p.nome}</strong>
+                    <span style="color:var(--rosa); font-weight:bold;">R$ ${p.preco}</span>
+                </div>
+                <small style="color:#999;">${p.data}</small><br>
+                <div style="margin-top:8px; font-size:12px; font-weight:bold; color:var(--laranja);">
+                    STATUS: ${p.status.toUpperCase()}
+                </div>
+            </div>
+        `).join('');
+    }
 
     function carregarPerfil() {
         const user = JSON.parse(localStorage.getItem('giordano_user'));
+        const btnAdmin = document.getElementById('btn-admin');
         const areaLogin = document.getElementById('area-login');
         const cardPerfil = document.getElementById('card-dados-perfil');
-        const btnAdmin = document.getElementById('btn-admin');
 
         if(user && user.logado) {
             areaLogin.style.display = 'none';
             cardPerfil.style.display = 'block';
             document.getElementById('u-nome').innerText = user.nome;
             document.getElementById('u-email').innerText = user.email;
-
-            // VERIFICA SE É O ADMIN
-            if(user.email === ADMIN_EMAIL) {
-                btnAdmin.style.display = 'block';
-            }
-        } else {
-            areaLogin.style.display = 'block';
-            cardPerfil.style.display = 'none';
+            if(user.email === ADMIN_EMAIL) btnAdmin.style.display = 'block';
         }
     }
 
     function navegar(tela) {
         document.querySelectorAll('.container').forEach(c => c.classList.remove('active'));
         document.getElementById('tela-' + tela).classList.add('active');
+        if(tela === 'pedidos') carregarHistorico();
+        if(tela === 'inicio') carregarProdutos();
     }
 
-    function logout() {
-        localStorage.removeItem('giordano_user');
-        location.reload();
+    function filtrar() {
+        const t = document.getElementById('search').value.toLowerCase();
+        const cards = document.getElementsByClassName('card');
+        for(let c of cards) c.style.display = c.innerText.toLowerCase().includes(t) ? "flex" : "none";
     }
 
-    // LISTA DE PRODUTOS
-    const itens = [
-        {nome: "Coxinha", preco: "15.00"},
-        {nome: "Copo Brownie", preco: "22.00"},
-        {nome: "Matheus Especial", preco: "15.00"}
-    ];
-    
-    document.getElementById('lista-produtos').innerHTML = itens.map(i => `
-        <div class="card">
-            <div><strong>${i.nome}</strong><br><span style="color:var(--verde)">R$ ${i.preco}</span></div>
-            <button class="btn-pedir" onclick="alert('Pedido enviado!')">Pedir</button>
-        </div>
-    `).join('');
+    function logout() { localStorage.removeItem('giordano_user'); location.reload(); }
 </script>
 </body>
 </html>
