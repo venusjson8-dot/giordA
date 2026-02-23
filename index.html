@@ -8,9 +8,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root { --rosa: #e91e63; --laranja: #f37021; --verde: #50c800; --fundo: #fdfdfd; }
-        body { font-family: 'Montserrat', sans-serif; margin: 0; background: var(--fundo); padding-bottom: 80px; overflow-x: hidden; }
+        body { font-family: 'Montserrat', sans-serif; margin: 0; background: var(--fundo); padding-bottom: 80px; }
 
-        /* BANNER IGUAL À FOTO */
         .hero-banner {
             background: var(--rosa) url('https://i.ibb.co/v4mYmYm/image-820d13.png');
             background-size: 80px; height: 120px; width: 100%; position: relative;
@@ -24,25 +23,24 @@
         .active { display: block; animation: fadeIn 0.3s; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        /* LOGIN */
-        #tela-login { text-align: center; padding-top: 100px; }
-
-        /* CARD DE PRODUTO */
         .card { 
             background: white; border-radius: 12px; padding: 15px; margin-bottom: 12px; 
             display: flex; justify-content: space-between; align-items: center; 
             box-shadow: 0 2px 8px rgba(0,0,0,0.05); border: 1px solid #f0f0f0;
         }
-        .info-prod strong { color: var(--rosa); font-size: 16px; display: block; }
-        .info-prod .preco { color: var(--verde); font-weight: bold; margin-top: 5px; display: block; }
         .btn-pedir { background: var(--rosa); color: white; border: none; padding: 10px 18px; border-radius: 8px; font-weight: bold; cursor: pointer; }
 
-        /* PERFIL */
+        /* PERFIL ESTILO */
         .status-line { border-left: 5px solid var(--rosa); padding-left: 15px; margin-bottom: 20px; }
         .perfil-card { background: white; padding: 25px; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
-        .btn-sair { width: 100%; padding: 12px; background: #eee; border: none; border-radius: 10px; cursor: pointer; color: #555; font-weight: bold; margin-top: 20px; }
+        
+        /* BOTÃO ADMIN SECRETO */
+        #btn-admin { 
+            display: none; background: #2c3e50; color: white; padding: 15px; 
+            border-radius: 10px; text-align: center; font-weight: bold; 
+            margin-top: 10px; text-decoration: none;
+        }
 
-        /* NAV INFERIOR LARANJA */
         .bottom-nav {
             position: fixed; bottom: 0; width: 100%; background: var(--laranja);
             display: flex; justify-content: space-around; padding: 12px 0; z-index: 1000;
@@ -54,34 +52,45 @@
 
 <div class="hero-banner"><img src="https://i.ibb.co/v4mYmYm/image-820d13.png" class="logo-flutuante"></div>
 
-<div id="tela-login" class="container active">
-    <h2 style="color: var(--rosa)">Olá! Giordano aqui.</h2>
-    <p>Entre com o Google para ver o cardápio:</p>
-    <div id="buttonDiv" style="display: flex; justify-content: center; margin-top: 20px;"></div>
-</div>
-
-<div id="tela-inicio" class="container">
+<div id="tela-inicio" class="container active">
     <div style="margin-top: 40px; padding-bottom: 20px;">
         <input type="text" placeholder="Buscar no Giordano..." style="width:100%; padding:12px; border-radius:25px; border:1px solid #ddd; outline:none;">
     </div>
     <div id="lista-produtos"></div>
 </div>
 
+<div id="tela-pedidos" class="container">
+    <div class="status-line"><h2>Meus Pedidos</h2></div>
+    <div id="historico-pedidos"><p style="color:#888; text-align:center;">Você ainda não fez pedidos.</p></div>
+</div>
+
 <div id="tela-perfil" class="container">
     <div class="status-line"><h2>Meu Perfil</h2></div>
-    <div class="perfil-card">
+    
+    <div id="area-login" style="text-align: center; padding: 20px; background: white; border-radius: 15px; margin-bottom: 20px;">
+        <p>Acesse com o Google para salvar seus pedidos:</p>
+        <div id="buttonDiv" style="display: flex; justify-content: center;"></div>
+    </div>
+
+    <div class="perfil-card" id="card-dados-perfil" style="display: none;">
         <p><strong>Nome:</strong> <span id="u-nome">Convidado</span></p>
         <p><strong>E-mail:</strong> <span id="u-email">Não informado</span></p>
-        <button class="btn-sair" onclick="logout()">Sair da Conta</button>
+        
+        <a href="admin.html" id="btn-admin">🛠 ACESSAR PAINEL ADMIN</a>
+        
+        <button onclick="logout()" style="width:100%; background:#eee; border:none; padding:12px; border-radius:10px; margin-top:15px; font-weight:bold; cursor:pointer;">Sair da Conta</button>
     </div>
 </div>
 
 <nav class="bottom-nav">
     <button class="nav-item" onclick="navegar('inicio')"><span>🏠</span> Início</button>
+    <button class="nav-item" onclick="navegar('pedidos')"><span>🛒</span> Pedidos</button>
     <button class="nav-item" onclick="navegar('perfil')"><span>👤</span> Perfil</button>
 </nav>
 
 <script>
+    const ADMIN_EMAIL = "matheushenriquelima20234@gmail.com"; //
+
     function handleCredentialResponse(response) {
         const data = JSON.parse(atob(response.credential.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
         localStorage.setItem('giordano_user', JSON.stringify({
@@ -89,7 +98,7 @@
             email: data.email,
             logado: true
         }));
-        verificarAcesso();
+        carregarPerfil();
     }
 
     window.onload = function () {
@@ -98,26 +107,34 @@
             callback: handleCredentialResponse
         });
         google.accounts.id.renderButton(document.getElementById("buttonDiv"), { theme: "outline", size: "large", shape: "pill" });
-        verificarAcesso();
+        carregarPerfil();
     };
 
-    function verificarAcesso() {
+    function carregarPerfil() {
         const user = JSON.parse(localStorage.getItem('giordano_user'));
+        const areaLogin = document.getElementById('area-login');
+        const cardPerfil = document.getElementById('card-dados-perfil');
+        const btnAdmin = document.getElementById('btn-admin');
+
         if(user && user.logado) {
-            navegar('inicio');
+            areaLogin.style.display = 'none';
+            cardPerfil.style.display = 'block';
+            document.getElementById('u-nome').innerText = user.nome;
+            document.getElementById('u-email').innerText = user.email;
+
+            // VERIFICA SE É O ADMIN
+            if(user.email === ADMIN_EMAIL) {
+                btnAdmin.style.display = 'block';
+            }
         } else {
-            navegar('login');
+            areaLogin.style.display = 'block';
+            cardPerfil.style.display = 'none';
         }
     }
 
     function navegar(tela) {
         document.querySelectorAll('.container').forEach(c => c.classList.remove('active'));
         document.getElementById('tela-' + tela).classList.add('active');
-        if(tela === 'perfil') {
-            const user = JSON.parse(localStorage.getItem('giordano_user'));
-            document.getElementById('u-nome').innerText = user.nome;
-            document.getElementById('u-email').innerText = user.email;
-        }
     }
 
     function logout() {
@@ -125,15 +142,17 @@
         location.reload();
     }
 
-    // Carregar produtos estilo imagem
+    // LISTA DE PRODUTOS
     const itens = [
-        {nome: "Coxinha de Frango", preco: "15.00"},
-        {nome: "Copo Brownie Nutella", preco: "22.00"}
+        {nome: "Coxinha", preco: "15.00"},
+        {nome: "Copo Brownie", preco: "22.00"},
+        {nome: "Matheus Especial", preco: "15.00"}
     ];
+    
     document.getElementById('lista-produtos').innerHTML = itens.map(i => `
         <div class="card">
-            <div class="info-prod"><strong>${i.nome}</strong><span class="preco">R$ ${i.preco}</span></div>
-            <button class="btn-pedir">Pedir</button>
+            <div><strong>${i.nome}</strong><br><span style="color:var(--verde)">R$ ${i.preco}</span></div>
+            <button class="btn-pedir" onclick="alert('Pedido enviado!')">Pedir</button>
         </div>
     `).join('');
 </script>
