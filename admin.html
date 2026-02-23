@@ -3,205 +3,202 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Painel Giordano - Admin & Caixa</title>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+    <title>Giordano Admin Pro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
-        :root { --rosa: #e91e63; --laranja: #f37021; --verde: #50c800; --azul: #2c3e50; }
-        body { font-family: 'Montserrat', sans-serif; background: #f0f2f5; margin: 0; padding: 20px; }
-        
-        .secao { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); margin-bottom: 30px; }
-        h2 { border-left: 5px solid var(--rosa); padding-left: 15px; color: #333; display: flex; justify-content: space-between; align-items: center; }
+        :root { --rosa: #e91e63; --laranja: #f37021; --azul-escuro: #1a237e; --fundo: #f4f7f6; --texto: #333; }
+        * { box-sizing: border-box; }
+        body { font-family: 'Montserrat', sans-serif; margin: 0; display: flex; background: var(--fundo); color: var(--texto); height: 100vh; overflow: hidden; }
 
-        /* SISTEMA DE CAIXA */
-        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
-        .stat-card { background: var(--azul); color: white; padding: 20px; border-radius: 12px; text-align: center; }
-        .stat-card span { font-size: 24px; font-weight: bold; display: block; color: var(--verde); }
+        /* MENU LATERAL ESTILO BLUEDOX */
+        .sidebar { width: 260px; background: var(--azul-escuro); color: white; display: flex; flex-direction: column; padding: 20px; flex-shrink: 0; }
+        .logo-area { font-size: 20px; font-weight: bold; padding-bottom: 30px; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 20px; color: var(--rosa); }
+        .nav-link { padding: 15px; border-radius: 8px; cursor: pointer; transition: 0.3s; margin-bottom: 5px; display: flex; align-items: center; }
+        .nav-link:hover, .nav-link.active { background: var(--rosa); color: white; }
+        .nav-link span { margin-right: 10px; }
 
-        /* KANBAN PEDIDOS */
-        .kanban { display: flex; gap: 20px; overflow-x: auto; padding-bottom: 20px; }
-        .coluna { background: #ebedef; min-width: 280px; border-radius: 10px; padding: 15px; }
-        .card-pedido { background: white; padding: 15px; border-radius: 8px; margin-bottom: 10px; border-bottom: 3px solid #ddd; }
+        /* ÁREA CONTEÚDO */
+        .main-content { flex-grow: 1; padding: 30px; overflow-y: auto; }
+        .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        .tab-content { display: none; animation: fadeIn 0.3s; }
+        .tab-content.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        /* CARDS DE RESUMO */
+        .grid-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .stat-card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); text-align: center; border-bottom: 4px solid var(--rosa); }
+        .stat-card h4 { margin: 0; font-size: 14px; color: #777; }
+        .stat-card p { font-size: 24px; font-weight: bold; margin: 10px 0 0 0; color: var(--texto); }
+
+        /* CAIXA INTELIGENTE */
+        .caixa-box { background: white; padding: 20px; border-radius: 15px; border: 2px solid var(--laranja); }
+        .input-caixa { font-size: 20px; padding: 15px; text-align: right; border: 2px solid #eee; border-radius: 10px; width: 100%; margin: 10px 0; }
         
-        /* FORMULÁRIO PRODUTOS */
-        .grid-produtos { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 15px; }
-        .card-adm { border: 1px solid #eee; padding: 10px; border-radius: 10px; text-align: center; background: #fafafa; }
-        .card-adm img { width: 100%; height: 100px; object-fit: cover; border-radius: 8px; }
-        
-        input { width: 100%; padding: 10px; margin: 5px 0; border-radius: 8px; border: 1px solid #ddd; box-sizing: border-box; }
-        .btn { padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; color: white; margin-top: 5px; width: 100%; }
-        .btn-salvar { background: var(--verde); }
-        .btn-status { background: var(--laranja); font-size: 12px; }
-        .btn-excluir { background: #ff4444; }
+        /* TABELAS E GRIDS */
+        table { width: 100%; border-collapse: collapse; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        th, td { padding: 15px; text-align: left; border-bottom: 1px solid #eee; }
+        th { background: #fafafa; color: #777; font-size: 13px; }
+        .badge { padding: 5px 10px; border-radius: 5px; font-size: 11px; font-weight: bold; }
+        .badge-novo { background: #e3f2fd; color: #1976d2; }
+        .badge-preparo { background: #fff3e0; color: #f57c00; }
+
+        /* FORMULÁRIOS */
+        .form-area { background: white; padding: 20px; border-radius: 12px; margin-bottom: 20px; }
+        input, select { padding: 12px; border: 1px solid #ddd; border-radius: 8px; width: 100%; margin-bottom: 10px; font-family: 'Montserrat'; }
+        .btn-acao { background: var(--rosa); color: white; border: none; padding: 12px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; }
     </style>
 </head>
 <body>
 
-    <div class="secao">
-        <h2>💰 Resumo do Caixa (Hoje)</h2>
-        <div class="stats-grid">
-            <div class="stat-card">
-                Pedidos Finalizados
-                <span id="caixa-qtd">0</span>
-            </div>
-            <div class="stat-card">
-                Total Faturado
-                <span id="caixa-total">R$ 0,00</span>
-            </div>
-        </div>
-        <button class="btn btn-excluir" style="width: auto; background: #666;" onclick="resetarCaixa()">Zerar Caixa do Dia</button>
+    <div class="sidebar">
+        <div class="logo-area">GIORDANO PRO</div>
+        <div class="nav-link active" onclick="switchTab('pedidos')"><span>🛒</span> Pedidos</div>
+        <div class="nav-link" onclick="switchTab('caixa')"><span>💰</span> Caixa Inteligente</div>
+        <div class="nav-link" onclick="switchTab('config')"><span>⚙️</span> Configurações</div>
+        <div class="nav-link" onclick="switchTab('equipe')"><span>👥</span> Nossa Equipe</div>
     </div>
 
-    <div class="secao">
-        <h2>👨‍🍳 Painel de Operações</h2>
-        <div class="kanban">
-            <div class="coluna">
-                <h3 style="color:var(--rosa)">🆕 NOVOS</h3>
-                <div id="col-pendente"></div>
+    <div class="main-content">
+        <div id="pedidos" class="tab-content active">
+            <div class="header-top"><h2>Gestão de Pedidos</h2></div>
+            <table>
+                <thead>
+                    <tr><th>ID</th><th>Cliente</th><th>Produto</th><th>Valor</th><th>Status</th><th>Ações</th></tr>
+                </thead>
+                <tbody id="lista-pedidos-tabela"></tbody>
+            </table>
+        </div>
+
+        <div id="caixa" class="tab-content">
+            <div class="header-top"><h2>Caixa Inteligente</h2></div>
+            <div class="grid-stats">
+                <div class="stat-card"><h4>Vendas Hoje</h4><p id="c-vendas">0</p></div>
+                <div class="stat-card"><h4>Faturamento</h4><p id="c-faturamento">R$ 0,00</p></div>
             </div>
-            <div class="coluna">
-                <h3 style="color:var(--laranja)">🔥 PREPARO</h3>
-                <div id="col-preparo"></div>
+            <div class="caixa-box">
+                <h3>Calculadora de Troco</h3>
+                <label>Total do Pedido (R$):</label>
+                <input type="number" id="caixa-total-pedido" class="input-caixa" placeholder="0.00">
+                <label>Valor Recebido (R$):</label>
+                <input type="number" id="caixa-recebido" class="input-caixa" placeholder="0.00" oninput="calcularTroco()">
+                <label>Método de Pagamento:</label>
+                <select id="pagamento-tipo">
+                    <option>Pix</option>
+                    <option>Cartão de Crédito</option>
+                    <option>Cartão de Débito</option>
+                    <option>Dinheiro</option>
+                </select>
+                <div style="background: var(--azul-escuro); color: white; padding: 20px; border-radius: 10px; margin-top: 15px;">
+                    <h2 style="margin:0; border:none; color:white;">TROCO: <span id="resultado-troco" style="color:var(--verde)">R$ 0,00</span></h2>
+                </div>
             </div>
-            <div class="coluna">
-                <h3 style="color:var(--verde)">🛵 ENTREGA</h3>
-                <div id="col-entrega"></div>
+        </div>
+
+        <div id="config" class="tab-content">
+            <div class="header-top"><h2>Configurações do Cardápio</h2></div>
+            <div class="form-area">
+                <h3>Adicionar / Editar Produto</h3>
+                <input type="hidden" id="edit-id">
+                <input type="text" id="p-nome" placeholder="Nome do Produto">
+                <input type="text" id="p-preco" placeholder="Preço (Ex: 15.00)">
+                <input type="text" id="p-foto" placeholder="URL da Foto">
+                <select id="p-categoria">
+                    <option>Doces</option>
+                    <option>Salgados</option>
+                    <option>Bebidas</option>
+                </select>
+                <button class="btn-acao" onclick="salvarProduto()">Salvar Produto</button>
+            </div>
+            <div id="grade-produtos-config" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap:15px;"></div>
+        </div>
+
+        <div id="equipe" class="tab-content">
+            <div class="header-top"><h2>Nossa Equipe</h2></div>
+            <div class="stat-card" style="text-align: left; border-left: 5px solid var(--rosa);">
+                <p>Matheus Henrique</p>
+                <small>Administrador Geral</small>
             </div>
         </div>
     </div>
 
-    <div class="secao">
-        <h2>🍎 Editar Cardápio</h2>
-        <div id="form-produto" style="margin-bottom: 20px;">
-            <input type="hidden" id="edit-index">
-            <input type="text" id="p-nome" placeholder="Nome do Produto">
-            <input type="text" id="p-preco" placeholder="Preço (Ex: 15.00)">
-            <input type="text" id="p-foto" placeholder="Link da Foto">
-            <button class="btn btn-salvar" onclick="salvarProduto()" id="btn-salvar">Salvar no Cardápio</button>
-        </div>
-        <div class="grid-produtos" id="lista-adm"></div>
-    </div>
+    <audio id="som-notificacao" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3"></audio>
 
 <script>
-    // --- LÓGICA DO CAIXA ---
-    function atualizarCaixa() {
-        const pedidos = JSON.parse(localStorage.getItem('meusPedidosDG')) || [];
-        const finalizados = pedidos.filter(p => p.status === 'finalizado');
-        
-        const total = finalizados.reduce((acc, p) => acc + parseFloat(p.preco), 0);
-        
-        document.getElementById('caixa-qtd').innerText = finalizados.length;
-        document.getElementById('caixa-total').innerText = `R$ ${total.toFixed(2)}`;
+    let qtdPedidosAnterior = 0;
+
+    function switchTab(tabId) {
+        document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+        document.getElementById(tabId).classList.add('active');
+        event.currentTarget.classList.add('active');
     }
 
-    function resetarCaixa() {
-        if(confirm("Deseja realmente apagar o histórico de pedidos finalizados?")) {
-            let pedidos = JSON.parse(localStorage.getItem('meusPedidosDG')) || [];
-            pedidos = pedidos.filter(p => p.status !== 'finalizado');
-            localStorage.setItem('meusPedidosDG', JSON.stringify(pedidos));
-            renderizarTudo();
-        }
-    }
-
-    // --- LÓGICA DE PEDIDOS ---
     function renderizarPedidos() {
         const pedidos = JSON.parse(localStorage.getItem('meusPedidosDG')) || [];
-        document.getElementById('col-pendente').innerHTML = '';
-        document.getElementById('col-preparo').innerHTML = '';
-        document.getElementById('col-entrega').innerHTML = '';
+        
+        // Notificação Sonora
+        if(pedidos.length > qtdPedidosAnterior) {
+            document.getElementById('som-notificacao').play();
+            qtdPedidosAnterior = pedidos.length;
+        }
 
-        pedidos.forEach(p => {
-            if(p.status === 'finalizado') return;
-
-            const html = `
-                <div class="card-pedido">
-                    <strong>${p.nome}</strong><br>
-                    <small>Cliente: ${p.cliente}</small><br>
-                    <small>Valor: R$ ${p.preco}</small>
-                    ${renderBotaoStatus(p)}
-                    <button onclick="excluirPedido(${p.id})" style="border:none; color:red; background:none; cursor:pointer; font-size:10px; margin-top:5px;">[Cancelar]</button>
-                </div>
-            `;
-            document.getElementById('col-' + p.status).innerHTML += html;
-        });
-        atualizarCaixa();
-    }
-
-    function renderBotaoStatus(p) {
-        if(p.status === 'pendente') return `<button class="btn btn-status" onclick="mudarStatus(${p.id}, 'preparo')">PREPARAR</button>`;
-        if(p.status === 'preparo') return `<button class="btn btn-status" onclick="mudarStatus(${p.id}, 'entrega')">SAIU P/ ENTREGA</button>`;
-        if(p.status === 'entrega') return `<button class="btn btn-status" style="background:var(--azul)" onclick="mudarStatus(${p.id}, 'finalizado')">CONCLUIR VENDA</button>`;
-        return '';
+        const lista = document.getElementById('lista-pedidos-tabela');
+        lista.innerHTML = pedidos.slice().reverse().map(p => `
+            <tr>
+                <td>#${p.id.toString().slice(-4)}</td>
+                <td>${p.cliente}</td>
+                <td>${p.nome}</td>
+                <td>R$ ${p.preco}</td>
+                <td><span class="badge ${p.status === 'pendente' ? 'badge-novo' : 'badge-preparo'}">${p.status.toUpperCase()}</span></td>
+                <td>
+                    <button onclick="mudarStatus(${p.id}, 'preparando')">👩‍🍳 Preparar</button>
+                    <button onclick="mudarStatus(${p.id}, 'em rota')">🛵 Em Rota</button>
+                    <button onclick="mudarStatus(${p.id}, 'finalizado')">✅ Finalizar</button>
+                </td>
+            </tr>
+        `).join('');
+        atualizarResumoCaixa();
     }
 
     function mudarStatus(id, novoStatus) {
         let pedidos = JSON.parse(localStorage.getItem('meusPedidosDG'));
-        const index = pedidos.findIndex(p => p.id === id);
-        pedidos[index].status = novoStatus;
+        const idx = pedidos.findIndex(p => p.id === id);
+        pedidos[idx].status = novoStatus;
         localStorage.setItem('meusPedidosDG', JSON.stringify(pedidos));
-        renderizarTudo();
+        renderizarPedidos();
     }
 
-    function excluirPedido(id) {
-        let pedidos = JSON.parse(localStorage.getItem('meusPedidosDG'));
-        pedidos = pedidos.filter(p => p.id !== id);
-        localStorage.setItem('meusPedidosDG', JSON.stringify(pedidos));
-        renderizarTudo();
+    function calcularTroco() {
+        const total = parseFloat(document.getElementById('caixa-total-pedido').value) || 0;
+        const recebido = parseFloat(document.getElementById('caixa-recebido').value) || 0;
+        const troco = recebido - total;
+        document.getElementById('resultado-troco').innerText = `R$ ${troco > 0 ? troco.toFixed(2) : '0,00'}`;
     }
 
-    // --- LÓGICA DO CARDÁPIO ---
+    function atualizarResumoCaixa() {
+        const pedidos = JSON.parse(localStorage.getItem('meusPedidosDG')) || [];
+        const finalizados = pedidos.filter(p => p.status === 'finalizado');
+        const total = finalizados.reduce((acc, p) => acc + parseFloat(p.preco), 0);
+        document.getElementById('c-vendas').innerText = finalizados.length;
+        document.getElementById('c-faturamento').innerText = `R$ ${total.toFixed(2)}`;
+    }
+
+    // Configuração de Produtos
     function salvarProduto() {
         const nome = document.getElementById('p-nome').value;
         const preco = document.getElementById('p-preco').value;
         const foto = document.getElementById('p-foto').value || 'https://via.placeholder.com/150';
-        const index = document.getElementById('edit-index').value;
-
-        let produtos = JSON.parse(localStorage.getItem('cardapio_giordano')) || [];
-        if(index === "") { produtos.push({nome, preco, foto}); } 
-        else { produtos[index] = {nome, preco, foto}; document.getElementById('edit-index').value = ""; }
-
-        localStorage.setItem('cardapio_giordano', JSON.stringify(produtos));
-        document.getElementById('p-nome').value = "";
-        document.getElementById('p-preco').value = "";
-        document.getElementById('p-foto').value = "";
-        renderizarTudo();
+        const categoria = document.getElementById('p-categoria').value;
+        
+        let cardapio = JSON.parse(localStorage.getItem('cardapio_giordano')) || [];
+        cardapio.push({nome, preco, foto, categoria});
+        localStorage.setItem('cardapio_giordano', JSON.stringify(cardapio));
+        alert("Produto Salvo!");
+        location.reload();
     }
 
-    function renderizarCardapio() {
-        const produtos = JSON.parse(localStorage.getItem('cardapio_giordano')) || [];
-        document.getElementById('lista-adm').innerHTML = produtos.map((p, i) => `
-            <div class="card-adm">
-                <img src="${p.foto}">
-                <p><strong>${p.nome}</strong><br>R$ ${p.preco}</p>
-                <button class="btn btn-editar" style="background:orange" onclick="prepararEdicao(${i})">Editar</button>
-                <button class="btn btn-excluir" onclick="excluirProduto(${i})">Excluir</button>
-            </div>
-        `).join('');
-    }
-
-    function prepararEdicao(i) {
-        const produtos = JSON.parse(localStorage.getItem('cardapio_giordano'));
-        document.getElementById('p-nome').value = produtos[i].nome;
-        document.getElementById('p-preco').value = produtos[i].preco;
-        document.getElementById('p-foto').value = produtos[i].foto;
-        document.getElementById('edit-index').value = i;
-        document.getElementById('btn-salvar').innerText = "Atualizar Produto";
-    }
-
-    function excluirProduto(i) {
-        let produtos = JSON.parse(localStorage.getItem('cardapio_giordano'));
-        produtos.splice(i, 1);
-        localStorage.setItem('cardapio_giordano', JSON.stringify(produtos));
-        renderizarCardapio();
-    }
-
-    function renderizarTudo() {
-        renderizarPedidos();
-        renderizarCardapio();
-    }
-
-    // Inicialização
-    renderizarTudo();
-    setInterval(renderizarPedidos, 5000); // Atualiza pedidos sozinhos
+    setInterval(renderizarPedidos, 5000);
+    renderizarPedidos();
 </script>
 </body>
 </html>
