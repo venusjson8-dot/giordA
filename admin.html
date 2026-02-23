@@ -2,110 +2,168 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Admin - Gerenciar Cardápio</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel Giordano - Admin</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        :root { --rosa: #e91e63; --verde: #50c800; }
-        body { font-family: 'Montserrat', sans-serif; background: #f4f4f4; padding: 20px; }
-        .container { max-width: 800px; margin: auto; background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        .form-grupo { margin-bottom: 15px; }
-        input, button { width: 100%; padding: 12px; margin-top: 5px; border-radius: 8px; border: 1px solid #ddd; box-sizing: border-box; }
-        button { background: var(--rosa); color: white; font-weight: bold; border: none; cursor: pointer; }
-        .grid-produtos { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; margin-top: 30px; }
-        .card-adm { background: #fff; border: 1px solid #eee; padding: 10px; border-radius: 10px; text-align: center; }
-        .card-adm img { width: 100%; height: 120px; object-fit: cover; border-radius: 8px; }
-        .btn-excluir { background: #ff4444; margin-top: 5px; }
-        .btn-editar { background: #ffa500; margin-top: 5px; }
+        :root { --rosa: #e91e63; --laranja: #f37021; --verde: #50c800; }
+        body { font-family: 'Montserrat', sans-serif; background: #f0f2f5; margin: 0; padding: 20px; }
+        
+        .secao { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); margin-bottom: 30px; }
+        h2 { border-left: 5px solid var(--rosa); padding-left: 15px; color: #333; }
+
+        /* CSS DOS PRODUTOS */
+        .grid-produtos { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 15px; margin-top: 20px; }
+        .card-adm { border: 1px solid #eee; padding: 10px; border-radius: 10px; text-align: center; background: #fafafa; }
+        .card-adm img { width: 100%; height: 100px; object-fit: cover; border-radius: 8px; }
+        input { width: 100%; padding: 10px; margin: 5px 0; border-radius: 8px; border: 1px solid #ddd; box-sizing: border-box; }
+        .btn { padding: 10px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; color: white; margin-top: 5px; width: 100%; }
+        .btn-salvar { background: var(--verde); }
+        .btn-editar { background: #ffa500; }
+        .btn-excluir { background: #ff4444; }
+
+        /* CSS DOS PEDIDOS (ESTILO KANBAN) */
+        .kanban { display: flex; gap: 20px; overflow-x: auto; padding-bottom: 20px; }
+        .coluna { background: #ebedef; min-width: 280px; border-radius: 10px; padding: 15px; }
+        .coluna h3 { text-align: center; color: #555; text-transform: uppercase; font-size: 14px; }
+        .card-pedido { background: white; padding: 15px; border-radius: 8px; margin-bottom: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .btn-status { background: var(--laranja); font-size: 11px; margin-top: 10px; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h2>🛠 Gerenciar Produtos</h2>
-    
-    <div id="form-produto">
-        <input type="hidden" id="edit-index">
-        <div class="form-grupo">
-            <label>Nome do Produto:</label>
-            <input type="text" id="p-nome" placeholder="Ex: Coxinha de Frango">
+    <div class="secao">
+        <h2>🍎 Gerenciar Cardápio</h2>
+        <div id="form-produto">
+            <input type="hidden" id="edit-index">
+            <input type="text" id="p-nome" placeholder="Nome do Doce/Salgado">
+            <input type="text" id="p-preco" placeholder="Preço (Ex: 15.00)">
+            <input type="text" id="p-foto" placeholder="Link da Foto (ImgBB)">
+            <button class="btn btn-salvar" onclick="salvarProduto()" id="btn-salvar">Adicionar ao Cardápio</button>
         </div>
-        <div class="form-grupo">
-            <label>Preço (R$):</label>
-            <input type="text" id="p-preco" placeholder="Ex: 15.00">
-        </div>
-        <div class="form-grupo">
-            <label>URL da Foto:</label>
-            <input type="text" id="p-foto" placeholder="Link da imagem (ex: ibb.co)">
-        </div>
-        <button onclick="salvarProduto()" id="btn-salvar">Adicionar Produto</button>
+        <div class="grid-produtos" id="lista-adm"></div>
     </div>
 
-    <div class="grid-produtos" id="lista-adm"></div>
-</div>
+    <div class="secao">
+        <h2>🛒 Painel de Operações (Pedidos)</h2>
+        <div class="kanban">
+            <div class="coluna">
+                <h3>🆕 Novos</h3>
+                <div id="col-pendente"></div>
+            </div>
+            <div class="coluna">
+                <h3>👨‍🍳 Preparo</h3>
+                <div id="col-preparo"></div>
+            </div>
+            <div class="coluna">
+                <h3>🛵 Entrega</h3>
+                <div id="col-entrega"></div>
+            </div>
+        </div>
+        <button class="btn btn-excluir" style="width: auto;" onclick="limparFinalizados()">Limpar Pedidos Finalizados</button>
+    </div>
 
 <script>
-    // Chave única para o cardápio
-    const CHAVE_CARDAPIO = 'cardapio_giordano';
-
+    // --- LÓGICA DO CARDÁPIO ---
     function salvarProduto() {
         const nome = document.getElementById('p-nome').value;
         const preco = document.getElementById('p-preco').value;
         const foto = document.getElementById('p-foto').value || 'https://via.placeholder.com/150';
         const index = document.getElementById('edit-index').value;
 
-        let produtos = JSON.parse(localStorage.getItem(CHAVE_CARDAPIO)) || [];
+        let produtos = JSON.parse(localStorage.getItem('cardapio_giordano')) || [];
 
         if(index === "") {
             produtos.push({nome, preco, foto});
         } else {
             produtos[index] = {nome, preco, foto};
             document.getElementById('edit-index').value = "";
-            document.getElementById('btn-salvar').innerText = "Adicionar Produto";
+            document.getElementById('btn-salvar').innerText = "Adicionar ao Cardápio";
         }
 
-        localStorage.setItem(CHAVE_CARDAPIO, JSON.stringify(produtos));
-        limparCampos();
-        renderizarAdm();
+        localStorage.setItem('cardapio_giordano', JSON.stringify(produtos));
+        location.reload(); 
     }
 
-    function renderizarAdm() {
-        const lista = document.getElementById('lista-adm');
-        const produtos = JSON.parse(localStorage.getItem(CHAVE_CARDAPIO)) || [];
-        
-        lista.innerHTML = produtos.map((p, i) => `
+    function renderizarCardapio() {
+        const produtos = JSON.parse(localStorage.getItem('cardapio_giordano')) || [];
+        document.getElementById('lista-adm').innerHTML = produtos.map((p, i) => `
             <div class="card-adm">
                 <img src="${p.foto}">
-                <strong>${p.nome}</strong><br>
-                <span>R$ ${p.preco}</span>
-                <button class="btn-editar" onclick="prepararEdicao(${i})">Editar</button>
-                <button class="btn-excluir" onclick="excluirProduto(${i})">Excluir</button>
+                <p><strong>${p.nome}</strong><br>R$ ${p.preco}</p>
+                <button class="btn btn-editar" onclick="prepararEdicao(${i})">Editar</button>
+                <button class="btn btn-excluir" onclick="excluirProduto(${i})">Excluir</button>
             </div>
         `).join('');
     }
 
-    function excluirProduto(i) {
-        let produtos = JSON.parse(localStorage.getItem(CHAVE_CARDAPIO));
-        produtos.splice(i, 1);
-        localStorage.setItem(CHAVE_CARDAPIO, JSON.stringify(produtos));
-        renderizarAdm();
-    }
-
     function prepararEdicao(i) {
-        const produtos = JSON.parse(localStorage.getItem(CHAVE_CARDAPIO));
+        const produtos = JSON.parse(localStorage.getItem('cardapio_giordano'));
         document.getElementById('p-nome').value = produtos[i].nome;
         document.getElementById('p-preco').value = produtos[i].preco;
         document.getElementById('p-foto').value = produtos[i].foto;
         document.getElementById('edit-index').value = i;
         document.getElementById('btn-salvar').innerText = "Atualizar Produto";
+        window.scrollTo(0,0);
     }
 
-    function limparCampos() {
-        document.getElementById('p-nome').value = "";
-        document.getElementById('p-preco').value = "";
-        document.getElementById('p-foto').value = "";
+    function excluirProduto(i) {
+        let produtos = JSON.parse(localStorage.getItem('cardapio_giordano'));
+        produtos.splice(i, 1);
+        localStorage.setItem('cardapio_giordano', JSON.stringify(produtos));
+        renderizarCardapio();
     }
 
-    renderizarAdm();
+    // --- LÓGICA DOS PEDIDOS ---
+    function renderizarPedidos() {
+        const pedidos = JSON.parse(localStorage.getItem('meusPedidosDG')) || [];
+        
+        // Limpa as colunas
+        document.getElementById('col-pendente').innerHTML = '';
+        document.getElementById('col-preparo').innerHTML = '';
+        document.getElementById('col-entrega').innerHTML = '';
+
+        pedidos.forEach(p => {
+            const html = `
+                <div class="card-pedido">
+                    <strong>${p.nome}</strong><br>
+                    <small>Cliente: ${p.cliente}</small><br>
+                    <small>${p.data}</small>
+                    ${renderBotaoStatus(p)}
+                </div>
+            `;
+            document.getElementById('col-' + p.status).innerHTML += html;
+        });
+    }
+
+    function renderBotaoStatus(p) {
+        if(p.status === 'pendente') return `<button class="btn btn-status" onclick="mudarStatus(${p.id}, 'preparo')">Começar Preparo</button>`;
+        if(p.status === 'preparo') return `<button class="btn btn-status" onclick="mudarStatus(${p.id}, 'entrega')">Saiu para Entrega</button>`;
+        if(p.status === 'entrega') return `<button class="btn btn-status" style="background:#444" onclick="mudarStatus(${p.id}, 'finalizado')">Finalizar</button>`;
+        return '';
+    }
+
+    function mudarStatus(id, novoStatus) {
+        let pedidos = JSON.parse(localStorage.getItem('meusPedidosDG'));
+        const index = pedidos.findIndex(p => p.id === id);
+        pedidos[index].status = novoStatus;
+        localStorage.setItem('meusPedidosDG', JSON.stringify(pedidos));
+        renderizarPedidos();
+    }
+
+    function limparFinalizados() {
+        let pedidos = JSON.parse(localStorage.getItem('meusPedidosDG')) || [];
+        pedidos = pedidos.filter(p => p.status !== 'finalizado');
+        localStorage.setItem('meusPedidosDG', JSON.stringify(pedidos));
+        renderizarPedidos();
+    }
+
+    // Inicializa tudo
+    renderizarCardapio();
+    renderizarPedidos();
+    
+    // Atualiza os pedidos automaticamente a cada 5 segundos
+    setInterval(renderizarPedidos, 5000);
 </script>
 </body>
 </html>
