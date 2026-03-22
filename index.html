@@ -36,17 +36,11 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* Controle de Telas */
         .screen { display: none; padding: 20px; max-width: 1100px; margin: 0 auto; animation: fadeInUp 0.5s ease; }
         .active { display: block; }
 
-        /* Login Container */
-        .login-container {
-            height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
+        /* Login */
+        .login-container { height: 100vh; display: flex; align-items: center; justify-content: center; }
         .login-box {
             background: var(--surface);
             padding: 45px;
@@ -56,8 +50,6 @@
             text-align: center;
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
         }
-        .login-box h2 { font-weight: 800; font-size: 24px; margin-bottom: 8px; letter-spacing: -0.5px; }
-        .login-box p { color: var(--text-dim); font-size: 14px; margin-bottom: 30px; }
 
         input {
             width: 100%;
@@ -68,10 +60,9 @@
             color: white;
             border-radius: 12px;
             font-size: 15px;
-            transition: 0.2s;
             outline: none;
         }
-        input:focus { border-color: var(--accent); box-shadow: 0 0 0 4px var(--accent-glow); }
+        input:focus { border-color: var(--accent); }
 
         button {
             width: 100%;
@@ -85,7 +76,7 @@
             margin-top: 15px;
             transition: 0.3s;
         }
-        button:hover { filter: brightness(1.2); transform: translateY(-2px); }
+        button:hover { filter: brightness(1.2); }
 
         nav {
             background: var(--glass);
@@ -98,22 +89,12 @@
             border-radius: 16px;
             margin: 20px 0 40px 0;
         }
-        .user-info { display: flex; align-items: center; gap: 10px; }
-        .status-dot { width: 8px; height: 8px; background: var(--success); border-radius: 50%; box-shadow: 0 0 10px var(--success); }
 
         .btn-admin { background: var(--admin); width: auto; padding: 10px 20px; font-size: 13px; }
         .btn-back { background: transparent; border: 1px solid var(--border); width: auto; padding: 8px 20px; }
 
-        .log-grid-header {
-            display: grid;
-            grid-template-columns: 120px 1fr 1fr;
-            padding: 0 20px 10px;
-            color: var(--text-dim);
-            font-size: 12px;
-            font-weight: 700;
-            text-transform: uppercase;
-        }
-        .log-item {
+        /* Logs e Lista */
+        .log-item, .staff-item {
             background: var(--surface);
             padding: 18px 25px;
             border-radius: 16px;
@@ -122,176 +103,176 @@
             grid-template-columns: 120px 1fr 1fr;
             align-items: center;
             border: 1px solid var(--border);
-            transition: 0.3s;
         }
-        .log-item:hover { border-color: var(--accent); transform: scale(1.01); background: #16161d; }
-        .log-time { font-family: 'JetBrains Mono', monospace; color: var(--text-dim); font-size: 13px; }
-        .log-user { color: var(--accent); font-weight: 700; text-decoration: none; font-size: 15px; }
-        .log-char { 
-            background: rgba(255, 179, 0, 0.1); 
-            color: #ffb300; 
-            padding: 6px 14px; 
-            border-radius: 8px; 
-            font-size: 12px; 
-            font-weight: 800; 
-            width: fit-content;
-            justify-self: end;
+
+        .staff-item { grid-template-columns: 1fr 1fr 100px; }
+
+        .log-char, .btn-del-staff {
+            background: rgba(255, 71, 87, 0.1);
+            color: var(--admin);
+            padding: 6px 14px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 800;
+            cursor: pointer;
+            border: none;
+            text-align: center;
         }
+
+        .log-char { background: rgba(255, 179, 0, 0.1); color: #ffb300; cursor: default; justify-self: end; }
 
         .admin-card {
             background: var(--surface);
-            padding: 40px;
+            padding: 30px;
             border-radius: 24px;
             border: 1px solid var(--border);
-            max-width: 600px;
-            margin: 0 auto;
+            margin-bottom: 30px;
         }
     </style>
 </head>
 <body>
 
-    <!-- TELA DE LOGIN (DESAPARECE APÓS LOGAR) -->
+    <!-- TELA DE LOGIN -->
     <div id="screen-login" class="login-container screen active">
         <div class="login-box">
-            <h2>Bem-vindo</h2>
-            <p>Acesse o painel administrativo</p>
+            <h2>Elite Panel</h2>
+            <p>Acesse o terminal</p>
             <input type="text" id="user-input" placeholder="Usuário">
             <input type="password" id="pass-input" placeholder="Senha">
-            <button onclick="tentarLogin()">Entrar no Sistema</button>
-            <p id="error-msg" style="color: var(--admin); margin-top: 15px; font-weight: 600; display: none;"></p>
+            <button onclick="tentarLogin()">Entrar</button>
+            <p id="error-msg" style="color: var(--admin); margin-top: 15px; display: none;"></p>
         </div>
     </div>
 
-    <!-- DASHBOARD (APARECE APÓS LOGAR) -->
+    <!-- DASHBOARD -->
     <div id="screen-dash" class="screen">
         <nav>
-            <div class="user-info">
-                <div class="status-dot"></div>
-                <span style="font-size: 14px; color: var(--text-dim);">Sessão Ativa: <b id="display-name" style="color: white;">...</b></span>
-            </div>
+            <span style="font-size: 14px; color: var(--text-dim);">Sessão: <b id="display-name" style="color: white;">...</b></span>
             <div style="display:flex; gap:12px;">
                 <button id="admin-btn" class="btn-admin" style="display:none;" onclick="mudarTela('screen-dash', 'screen-admin')">Painel do Dono</button>
                 <button onclick="location.reload()" class="btn-back">Sair</button>
             </div>
         </nav>
-
-        <h2 style="font-size: 28px; font-weight: 800; margin-bottom: 30px; letter-spacing: -1px;">Atividade em Tempo Real</h2>
-        
-        <div class="log-grid-header">
-            <span>Horário</span>
-            <span>Usuário Roblox</span>
-            <span style="text-align: right;">Personagem</span>
-        </div>
+        <h2 style="margin-bottom: 20px;">Logs de Atividade</h2>
         <div id="log-list"></div>
     </div>
 
     <!-- PAINEL DO DONO -->
     <div id="screen-admin" class="screen">
-        <button onclick="mudarTela('screen-admin', 'screen-dash')" class="btn-back" style="margin-bottom: 30px;">← Voltar ao Início</button>
+        <button onclick="mudarTela('screen-admin', 'screen-dash')" class="btn-back" style="margin-bottom: 30px;">← Voltar</button>
         
         <div class="admin-card">
-            <h2 style="margin-bottom: 10px; font-weight: 800;">Criar Novo Staff</h2>
-            <p style="color: var(--text-dim); font-size: 14px; margin-bottom: 30px;">O novo usuário terá acesso visual às logs de spawn.</p>
-            
-            <label style="font-size: 13px; font-weight: 700; color: var(--text-dim);">LOGIN DO STAFF</label>
-            <input type="text" id="new-user" placeholder="Ex: moderador_01">
-            
-            <label style="font-size: 13px; font-weight: 700; color: var(--text-dim);">SENHA DE ACESSO</label>
-            <input type="password" id="new-pass" placeholder="••••••••">
-            
-            <button onclick="criarNovoUsuario()" style="background: var(--success); color: #00331a;">Gerar Credenciais</button>
+            <h3>Criar Staff</h3>
+            <div style="display: flex; gap: 10px; margin-top: 15px;">
+                <input type="text" id="new-user" placeholder="Usuário">
+                <input type="text" id="new-pass" placeholder="Senha">
+                <button onclick="criarNovoUsuario()" style="width: 200px; margin-top: 10px; background: var(--success); color: #000;">Salvar</button>
+            </div>
+        </div>
+
+        <h3>Usuários Staff Ativos</h3>
+        <p style="color: var(--text-dim); font-size: 12px; margin-bottom: 15px;">Abaixo estão todos que podem acessar os logs.</p>
+        <div id="staff-list">
+            <!-- Lista de staffs aqui -->
         </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getDatabase, ref, onChildAdded, set, get, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { getDatabase, ref, onChildAdded, onChildRemoved, set, get, remove, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
         const firebaseConfig = { databaseURL: "https://spawnlogs-default-rtdb.firebaseio.com/" };
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        // FUNÇÃO DE LOGIN
+        // LOGIN
         window.tentarLogin = async () => {
             const user = document.getElementById('user-input').value;
             const pass = document.getElementById('pass-input').value;
             const err = document.getElementById('error-msg');
 
-            // 1. Verifica Dono
             if (user === "meow" && pass === "2013") {
                 entrar("DONO");
                 return;
             }
 
-            // 2. Verifica Staff no Banco
-            const staffRef = ref(db, 'staff_accounts/' + user);
-            const snap = await get(staffRef);
+            const snap = await get(ref(db, 'staff_accounts/' + user));
             if (snap.exists() && snap.val().password === pass) {
                 entrar("STAFF: " + user);
             } else {
-                err.innerText = "Credenciais Inválidas";
+                err.innerText = "Acesso Negado";
                 err.style.display = "block";
-                setTimeout(() => { err.style.display = "none"; }, 3000);
             }
         };
 
-        // FUNÇÃO QUE FAZ O LOGIN ACONTECER
         function entrar(cargo) {
-            // Remove a classe de container de login para não centralizar o dashboard
-            document.getElementById('screen-login').classList.remove('login-container');
-            
-            // Troca as telas
-            document.getElementById('screen-login').classList.remove('active');
+            document.getElementById('screen-login').classList.remove('active', 'login-container');
             document.getElementById('screen-dash').classList.add('active');
-            
             document.getElementById('display-name').innerText = cargo;
             
             if (cargo === "DONO") {
                 document.getElementById('admin-btn').style.display = "block";
+                carregarListaStaff(); // Só carrega se for dono
             }
-            
             carregarLogs();
         }
 
+        // GERENCIAR STAFF (DONO)
         window.criarNovoUsuario = async () => {
-            const newUser = document.getElementById('new-user').value;
-            const newPass = document.getElementById('new-pass').value;
-            if (!newUser || !newPass) return alert("Preencha todos os campos.");
-
-            try {
-                await set(ref(db, 'staff_accounts/' + newUser), { password: newPass });
-                alert("Usuário staff criado com sucesso!");
-                document.getElementById('new-user').value = "";
-                document.getElementById('new-pass').value = "";
-            } catch(e) { alert("Erro ao salvar no banco."); }
+            const u = document.getElementById('new-user').value;
+            const p = document.getElementById('new-pass').value;
+            if (!u || !p) return alert("Preencha tudo!");
+            await set(ref(db, 'staff_accounts/' + u), { password: p });
+            document.getElementById('new-user').value = "";
+            document.getElementById('new-pass').value = "";
         };
 
-        window.mudarTela = (esconde, mostra) => {
-            document.getElementById(esconde).classList.remove('active');
-            document.getElementById(mostra).classList.add('active');
+        window.excluirStaff = async (id) => {
+            if(confirm(`Remover acesso de ${id}?`)) {
+                await remove(ref(db, 'staff_accounts/' + id));
+            }
         };
 
+        function carregarListaStaff() {
+            const list = document.getElementById('staff-list');
+            // onValue escuta qualquer mudança na lista de staffs
+            onValue(ref(db, 'staff_accounts'), (snapshot) => {
+                list.innerHTML = "";
+                snapshot.forEach((child) => {
+                    const id = child.key;
+                    const data = child.val();
+                    const div = document.createElement('div');
+                    div.className = 'staff-item';
+                    div.innerHTML = `
+                        <b style="color: var(--accent)">@${id}</b>
+                        <span style="color: var(--text-dim)">Senha: ${data.password}</span>
+                        <button class="btn-del-staff" onclick="excluirStaff('${id}')">EXCLUIR</button>
+                    `;
+                    list.appendChild(div);
+                });
+            });
+        }
+
+        // LOGS
         function carregarLogs() {
             const list = document.getElementById('log-list');
-            const agora = Math.floor(Date.now() / 1000);
-            
             onChildAdded(ref(db, 'spawn_logs'), (snap) => {
                 const data = snap.val();
-                if (agora - data.timestamp > 86400) {
-                    remove(ref(db, 'spawn_logs/' + snap.key));
-                    return;
-                }
-
                 const div = document.createElement('div');
                 div.className = 'log-item';
                 div.innerHTML = `
                     <span class="log-time">${new Date(data.timestamp*1000).toLocaleTimeString()}</span>
-                    <a class="log-user" href="https://www.roblox.com/users/${data.userId}/profile" target="_blank">@${data.username}</a>
+                    <a style="color:var(--accent); font-weight:700;">@${data.username}</a>
                     <span class="log-char">${data.character}</span>
                 `;
                 list.prepend(div);
             });
         }
+
+        window.mudarTela = (e, m) => {
+            document.getElementById(e).classList.remove('active');
+            document.getElementById(m).classList.add('active');
+        };
     </script>
 </body>
 </html>
