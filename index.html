@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Elite Logs - Admin Panel</title>
-    <!-- Adicionando ícones para o visual profissional -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono&display=swap');
@@ -30,21 +29,28 @@
             background: var(--bg);
             background-image: radial-gradient(circle at 50% -20%, #1a1a2e 0%, #050508 100%);
             color: var(--text-main);
-            height: 100vh;
+            min-height: 100vh;
             overflow-x: hidden;
         }
 
-        /* Animações */
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+        /* Animações de Transição */
+        .fade-in { animation: fadeIn 0.5s ease forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* LOGIN (Ocupa a tela toda inicialmente) */
+        #screen-login {
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            left: 0;
+            z-index: 1000;
+            background: var(--bg);
         }
 
-        .screen { display: none; padding: 20px; max-width: 1100px; margin: 0 auto; animation: fadeInUp 0.4s ease-out; }
-        .active { display: block; }
-
-        /* Login */
-        .login-container { height: 100vh; display: flex; align-items: center; justify-content: center; }
         .login-box {
             background: var(--surface);
             padding: 45px;
@@ -65,9 +71,8 @@
             border-radius: 14px;
             font-size: 15px;
             outline: none;
-            transition: 0.2s;
         }
-        input:focus { border-color: var(--accent); background: rgba(0,0,0,0.6); }
+        input:focus { border-color: var(--accent); }
 
         .btn-primary {
             width: 100%;
@@ -81,11 +86,13 @@
             margin-top: 15px;
             transition: 0.3s;
         }
-        .btn-primary:hover { filter: brightness(1.1); transform: translateY(-1px); box-shadow: 0 10px 20px -5px var(--accent-glow); }
+
+        /* CONTEÚDO PRINCIPAL (Invisível até o login) */
+        #main-wrapper { display: none; }
 
         /* NAVBAR PROFISSIONAL */
         .navbar {
-            background: rgba(17, 17, 22, 0.7);
+            background: rgba(17, 17, 22, 0.8);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
             height: var(--nav-height);
@@ -99,17 +106,10 @@
             z-index: 100;
         }
 
-        .nav-logo {
-            font-weight: 800;
-            font-size: 18px;
-            letter-spacing: -0.5px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .nav-logo i { color: var(--accent); font-size: 22px; }
+        .nav-logo { font-weight: 800; font-size: 18px; display: flex; align-items: center; gap: 10px; }
+        .nav-logo i { color: var(--accent); }
 
-        .nav-actions { display: flex; align-items: center; gap: 20px; }
+        .nav-actions { display: flex; align-items: center; gap: 15px; }
 
         .session-badge {
             background: var(--glass);
@@ -117,7 +117,6 @@
             border-radius: 100px;
             border: 1px solid var(--border);
             font-size: 13px;
-            color: var(--text-dim);
             display: flex;
             align-items: center;
             gap: 8px;
@@ -131,26 +130,14 @@
             padding: 8px 16px;
             border-radius: 10px;
             font-weight: 600;
-            font-size: 13px;
             cursor: pointer;
-            transition: 0.2s;
         }
-        .btn-nav-admin:hover { background: var(--admin); color: white; }
 
-        .btn-logout {
-            color: var(--text-dim);
-            background: none;
-            border: none;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 600;
-            transition: 0.2s;
-            padding: 8px;
-        }
-        .btn-logout:hover { color: white; }
+        /* GRID DE LOGS */
+        .screen { padding: 40px 20px; max-width: 1100px; margin: 0 auto; display: none; }
+        .screen.active { display: block; }
 
-        /* Estilos de Lista */
-        .log-item, .staff-item {
+        .log-item {
             background: var(--surface);
             padding: 18px 25px;
             border-radius: 18px;
@@ -159,116 +146,63 @@
             grid-template-columns: 120px 1fr 140px;
             align-items: center;
             border: 1px solid var(--border);
-            transition: 0.2s;
         }
-        .log-item:hover { border-color: var(--accent); background: #14141b; }
 
         .log-time { font-family: 'JetBrains Mono', monospace; color: var(--text-dim); font-size: 13px; }
-        .log-user { color: var(--accent); font-weight: 700; font-size: 15px; }
-        .log-char { 
-            background: rgba(255, 179, 0, 0.1); 
-            color: #ffb300; 
-            padding: 6px 12px; 
-            border-radius: 8px; 
-            font-size: 11px; 
-            font-weight: 800; 
-            text-align: center;
-        }
+        .log-user { color: var(--accent); font-weight: 700; }
+        .log-char { background: rgba(255, 179, 0, 0.1); color: #ffb300; padding: 6px; border-radius: 8px; font-size: 11px; text-align: center; font-weight: 800; }
 
-        .admin-card {
-            background: var(--surface);
-            padding: 30px;
-            border-radius: 24px;
-            border: 1px solid var(--border);
-            margin-bottom: 30px;
-        }
-
-        .btn-delete {
-            background: rgba(255, 71, 87, 0.1);
-            color: var(--admin);
-            border: none;
-            padding: 8px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 12px;
-            font-weight: 700;
-            transition: 0.2s;
-        }
-        .btn-delete:hover { background: var(--admin); color: white; }
+        .admin-card { background: var(--surface); padding: 30px; border-radius: 24px; border: 1px solid var(--border); margin-bottom: 30px; }
+        .btn-delete { background: rgba(255, 71, 87, 0.1); color: var(--admin); border: none; padding: 8px; border-radius: 8px; cursor: pointer; font-weight: 700; }
     </style>
 </head>
 <body>
 
-    <!-- LOGIN -->
-    <div id="screen-login" class="login-container screen active">
+    <!-- TELA DE LOGIN (DESAPARECE TOTALMENTE) -->
+    <div id="screen-login">
         <div class="login-box">
-            <div style="margin-bottom: 25px;">
-                <i class="fa-solid fa-shield-halved" style="font-size: 40px; color: var(--accent);"></i>
-            </div>
-            <h2 style="font-weight: 800; margin-bottom: 5px;">Elite Terminal</h2>
-            <p style="color: var(--text-dim); font-size: 14px; margin-bottom: 30px;">Identifique-se para continuar</p>
+            <i class="fa-solid fa-shield-halved" style="font-size: 40px; color: var(--accent); margin-bottom: 20px;"></i>
+            <h2 style="margin-bottom: 5px;">Elite Access</h2>
+            <p style="color: var(--text-dim); font-size: 14px; margin-bottom: 30px;">Painel Restrito</p>
             
             <input type="text" id="user-input" placeholder="Usuário">
             <input type="password" id="pass-input" placeholder="Senha">
-            <button class="btn-primary" onclick="tentarLogin()">Acessar Painel</button>
-            <p id="error-msg" style="color: var(--admin); margin-top: 15px; display: none; font-size: 13px; font-weight: 600;"></p>
+            <button class="btn-primary" onclick="tentarLogin()">Entrar</button>
+            <p id="error-msg" style="color: var(--admin); margin-top: 15px; display: none; font-size: 13px;"></p>
         </div>
     </div>
 
-    <!-- NAVBAR (Só aparece após login) -->
-    <nav id="main-nav" class="navbar" style="display: none;">
-        <div class="nav-logo">
-            <i class="fa-solid fa-cube"></i>
-            <span>ELITE<span style="color:var(--accent)">LOGS</span></span>
-        </div>
-
-        <div class="nav-actions">
-            <div class="session-badge">
-                <div class="status-indicator"></div>
-                <span id="display-name">Carregando...</span>
+    <!-- WRAPPER DO SISTEMA (SÓ APARECE APÓS LOGIN) -->
+    <div id="main-wrapper">
+        <nav class="navbar">
+            <div class="nav-logo"><i class="fa-solid fa-cube"></i> ELITE<span>LOGS</span></div>
+            <div class="nav-actions">
+                <div class="session-badge"><div class="status-indicator"></div> <span id="display-name">USUÁRIO</span></div>
+                <button id="admin-btn" class="btn-nav-admin" style="display:none;" onclick="mudarTela('screen-dash', 'screen-admin')">Dono</button>
+                <button onclick="location.reload()" style="background:none; border:none; color:var(--text-dim); cursor:pointer;"><i class="fa-solid fa-power-off"></i></button>
             </div>
-            
-            <button id="admin-btn" class="btn-nav-admin" style="display:none;" onclick="mudarTela('screen-dash', 'screen-admin')">
-                <i class="fa-solid fa-crown" style="margin-right: 5px;"></i> Dono
-            </button>
+        </nav>
 
-            <button onclick="location.reload()" class="btn-logout">
-                <i class="fa-solid fa-right-from-bracket"></i>
-            </button>
+        <!-- FEED -->
+        <div id="screen-dash" class="screen active fade-in">
+            <h2 style="margin-bottom: 30px;">Atividade em Tempo Real</h2>
+            <div id="log-list"></div>
         </div>
-    </nav>
 
-    <!-- DASHBOARD -->
-    <div id="screen-dash" class="screen">
-        <div style="margin-top: 20px; display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 30px;">
-            <div>
-                <h2 style="font-size: 28px; font-weight: 800; letter-spacing: -1px;">Feed de Atividade</h2>
-                <p style="color: var(--text-dim); font-size: 14px;">Monitoramento de spawns em tempo real</p>
+        <!-- ADMIN -->
+        <div id="screen-admin" class="screen fade-in">
+            <button onclick="mudarTela('screen-admin', 'screen-dash')" style="background:none; border:none; color:var(--text-dim); cursor:pointer; margin-bottom: 20px;"><i class="fa-solid fa-arrow-left"></i> Voltar</button>
+            <div class="admin-card">
+                <h3>Cadastrar Staff</h3>
+                <div style="display: grid; grid-template-columns: 1fr 1fr 150px; gap: 10px; margin-top: 15px;">
+                    <input type="text" id="new-user" placeholder="Login">
+                    <input type="text" id="new-pass" placeholder="Senha">
+                    <button onclick="criarNovoUsuario()" class="btn-primary" style="margin-top:10px;">Salvar</button>
+                </div>
             </div>
+            <h3>Contas Staff</h3>
+            <div id="staff-list"></div>
         </div>
-        <div id="log-list"></div>
-    </div>
-
-    <!-- PAINEL DO DONO -->
-    <div id="screen-admin" class="screen">
-        <div style="margin-top: 20px; margin-bottom: 30px;">
-            <button onclick="mudarTela('screen-admin', 'screen-dash')" class="btn-logout" style="padding-left: 0;">
-                <i class="fa-solid fa-arrow-left"></i> Voltar ao Feed
-            </button>
-            <h2 style="font-size: 28px; font-weight: 800; margin-top: 10px;">Gestão de Acessos</h2>
-        </div>
-        
-        <div class="admin-card">
-            <h4 style="margin-bottom: 15px;">Novo Membro da Staff</h4>
-            <div style="display: grid; grid-template-columns: 1fr 1fr 150px; gap: 15px;">
-                <input type="text" id="new-user" placeholder="Usuário">
-                <input type="text" id="new-pass" placeholder="Senha">
-                <button onclick="criarNovoUsuario()" class="btn-primary" style="margin-top: 10px; background: var(--success); color: #00331a;">Cadastrar</button>
-            </div>
-        </div>
-
-        <h4 style="margin-bottom: 15px; color: var(--text-dim);">Contas Ativas</h4>
-        <div id="staff-list"></div>
     </div>
 
     <script type="module">
@@ -285,25 +219,26 @@
             const err = document.getElementById('error-msg');
 
             if (user === "meow" && pass === "2013") {
-                entrar("DONO");
+                autorizar("DONO");
                 return;
             }
 
             const snap = await get(ref(db, 'staff_accounts/' + user));
             if (snap.exists() && snap.val().password === pass) {
-                entrar(user.toUpperCase());
+                autorizar(user.toUpperCase());
             } else {
-                err.innerText = "Credenciais inválidas";
+                err.innerText = "Falha na autenticação";
                 err.style.display = "block";
             }
         };
 
-        function entrar(cargo) {
-            document.getElementById('screen-login').classList.remove('active');
-            document.getElementById('main-nav').style.display = 'flex';
-            document.getElementById('screen-dash').classList.add('active');
-            document.getElementById('display-name').innerText = cargo;
+        function autorizar(cargo) {
+            // 1. Remove o login da tela
+            document.getElementById('screen-login').style.display = 'none';
+            // 2. Mostra o sistema principal
+            document.getElementById('main-wrapper').style.display = 'block';
             
+            document.getElementById('display-name').innerText = cargo;
             if (cargo === "DONO") {
                 document.getElementById('admin-btn').style.display = "block";
                 carregarListaStaff();
@@ -312,18 +247,16 @@
         }
 
         window.criarNovoUsuario = async () => {
-            const u = document.getElementById('new-user').value.trim();
-            const p = document.getElementById('new-pass').value.trim();
-            if (!u || !p) return alert("Preencha todos os campos!");
-            await set(ref(db, 'staff_accounts/' + u), { password: p });
-            document.getElementById('new-user').value = "";
-            document.getElementById('new-pass').value = "";
+            const u = document.getElementById('new-user').value;
+            const p = document.getElementById('new-pass').value;
+            if (u && p) {
+                await set(ref(db, 'staff_accounts/' + u), { password: p });
+                alert("Staff adicionado!");
+            }
         };
 
         window.excluirStaff = async (id) => {
-            if(confirm(`Revogar acesso de ${id}?`)) {
-                await remove(ref(db, 'staff_accounts/' + id));
-            }
+            if(confirm(`Remover ${id}?`)) await remove(ref(db, 'staff_accounts/' + id));
         };
 
         function carregarListaStaff() {
@@ -333,13 +266,9 @@
                 snapshot.forEach((child) => {
                     const id = child.key;
                     const div = document.createElement('div');
-                    div.className = 'staff-item';
+                    div.className = 'log-item';
                     div.style.gridTemplateColumns = "1fr 1fr 100px";
-                    div.innerHTML = `
-                        <b style="color: white">@${id}</b>
-                        <span style="color: var(--text-dim); font-family: monospace;">${child.val().password}</span>
-                        <button class="btn-delete" onclick="excluirStaff('${id}')">Revogar</button>
-                    `;
+                    div.innerHTML = `<b>@${id}</b> <span style="color:var(--text-dim)">${child.val().password}</span> <button class="btn-delete" onclick="excluirStaff('${id}')">Remover</button>`;
                     list.appendChild(div);
                 });
             });
@@ -350,12 +279,8 @@
             onChildAdded(ref(db, 'spawn_logs'), (snap) => {
                 const data = snap.val();
                 const div = document.createElement('div');
-                div.className = 'log-item';
-                div.innerHTML = `
-                    <span class="log-time">${new Date(data.timestamp*1000).toLocaleTimeString()}</span>
-                    <span class="log-user">@${data.username}</span>
-                    <span class="log-char">${data.character}</span>
-                `;
+                div.className = 'log-item fade-in';
+                div.innerHTML = `<span class="log-time">${new Date(data.timestamp*1000).toLocaleTimeString()}</span><span class="log-user">@${data.username}</span><span class="log-char">${data.character}</span>`;
                 list.prepend(div);
             });
         }
