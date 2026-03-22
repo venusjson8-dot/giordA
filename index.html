@@ -1,24 +1,25 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Elite Logs - Admin Panel</title>
+    <title>Game Helper</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono&display=swap');
 
         :root {
             --bg: #050508;
-            --surface: #111116;
+            --surface: rgba(17, 17, 22, 0.6);
             --accent: #007cf0;
             --accent-glow: rgba(0, 124, 240, 0.3);
             --admin: #ff4757;
             --success: #00e676;
+            --warning: #ffb300;
             --text-main: #ffffff;
             --text-dim: #88888f;
             --glass: rgba(255, 255, 255, 0.03);
-            --border: rgba(255, 255, 255, 0.08);
+            --border: rgba(255, 255, 255, 0.1);
             --nav-height: 70px;
         }
 
@@ -33,11 +34,15 @@
             overflow-x: hidden;
         }
 
-        /* Animações de Transição */
         .fade-in { animation: fadeIn 0.5s ease forwards; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* LOGIN (Ocupa a tela toda inicialmente) */
+        .glass-panel {
+            background: var(--surface) !important;
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border) !important;
+        }
+
         #screen-login {
             height: 100vh;
             display: flex;
@@ -53,25 +58,27 @@
 
         .login-box {
             background: var(--surface);
+            backdrop-filter: blur(15px);
             padding: 45px;
             border-radius: 28px;
             border: 1px solid var(--border);
             width: 400px;
             text-align: center;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
         }
 
-        input {
+        input, select, textarea {
             width: 100%;
             padding: 14px 18px;
             margin: 10px 0;
-            background: rgba(0,0,0,0.4);
+            background: rgba(255, 255, 255, 0.05);
             border: 1px solid var(--border);
             color: white;
             border-radius: 14px;
             font-size: 15px;
             outline: none;
+            transition: 0.3s;
         }
+        textarea { height: 100px; resize: none; font-family: inherit; }
         input:focus { border-color: var(--accent); }
 
         .btn-primary {
@@ -87,14 +94,11 @@
             transition: 0.3s;
         }
 
-        /* CONTEÚDO PRINCIPAL (Invisível até o login) */
         #main-wrapper { display: none; }
 
-        /* NAVBAR PROFISSIONAL */
         .navbar {
-            background: rgba(17, 17, 22, 0.8);
+            background: rgba(10, 10, 15, 0.7);
             backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
             height: var(--nav-height);
             border-bottom: 1px solid var(--border);
             display: flex;
@@ -112,7 +116,7 @@
         .nav-actions { display: flex; align-items: center; gap: 15px; }
 
         .session-badge {
-            background: var(--glass);
+            background: rgba(255, 255, 255, 0.05);
             padding: 6px 14px;
             border-radius: 100px;
             border: 1px solid var(--border);
@@ -121,19 +125,194 @@
             align-items: center;
             gap: 8px;
         }
-        .status-indicator { width: 6px; height: 6px; background: var(--success); border-radius: 50%; box-shadow: 0 0 8px var(--success); }
+        .status-indicator { width: 6px; height: 6px; background: var(--success); border-radius: 50%; }
 
-        .btn-nav-admin {
-            background: rgba(255, 71, 87, 0.1);
-            color: var(--admin);
-            border: 1px solid rgba(255, 71, 87, 0.2);
-            padding: 8px 16px;
-            border-radius: 10px;
-            font-weight: 600;
-            cursor: pointer;
-        }
+.btn-nav-cmd {
+    /* Fundo leve com a cor do cargo (15% de opacidade) */
+    background: color-mix(in srgb, var(--role-accent), transparent 85%);
+    color: var(--role-accent);
+    border: 1px solid var(--role-accent);
+    padding: 8px 16px;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+#admin-btn {
+    /* Fundo suave com a cor do cargo */
+    background: color-mix(in srgb, var(--role-accent), transparent 85%);
+    color: var(--role-accent);
+    border: 1px solid var(--role-accent);
+    padding: 8px 16px;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: none; /* Começa escondido, o JS mostra se for Owner/Dev */
+    align-items: center;
+    gap: 8px;
+    text-transform: uppercase;
+    font-size: 12px;
+    letter-spacing: 1px;
+}
 
-        /* GRID DE LOGS */
+#admin-btn:hover {
+    background: var(--role-accent);
+    color: white;
+    box-shadow: 0 0 20px var(--role-accent);
+    transform: translateY(-2px);
+}
+
+#admin-btn i {
+    color: inherit;
+}
+
+.btn-nav-cmd:hover {
+    /* Quando passa o mouse, ele preenche com a cor do cargo */
+    background: var(--role-accent);
+    color: white;
+    box-shadow: 0 0 15px var(--role-accent);
+    transform: translateY(-2px);
+}
+
+.btn-nav-cmd i {
+    /* Garante que o ícone do terminal siga a cor */
+    color: inherit; 
+}
+ :root {
+    /* Mantenha suas cores e adicione estas duas abaixo */
+    --role-accent: #007cf0;
+    --role-bg: radial-gradient(circle at 50% -20%, #1a1a2e 0%, #050508 100%);
+}
+
+/* Adicione este bloco para a imagem aparecer certa na barra */
+.role-icon-nav { 
+    width: 22px; 
+    height: 22px; 
+    object-fit: contain; 
+    border-radius: 4px; 
+}
+
+/* Altere o background do seu body para usar a variável */
+body {
+    background: var(--bg);
+    background-image: var(--role-bg);
+    background-attachment: fixed;
+    transition: 0.5s ease;
+}
+
+/* Faz os botões e bordas seguirem a cor do cargo */
+input:focus { border-color: var(--role-accent); }
+.btn-primary {
+    width: 100%;
+    padding: 14px;
+    background: var(--role-accent) !important; /* Cor dinâmica do cargo */
+    border: none;
+    color: white;
+    font-weight: 700;
+    border-radius: 14px;
+    cursor: pointer;
+    margin-top: 15px;
+    transition: 0.3s;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+.btn-primary:hover {
+    opacity: 0.8;
+    transform: translateY(-1px);
+}
+
+/* Garante que o ícone do logo também mude */
+.nav-logo i { color: var(--role-accent) !important; }
+
+/* Ajuste da imagem do cargo para não ficar gigante */
+.role-icon-nav { 
+    width: 20px; 
+    height: 20px; 
+    object-fit: contain; 
+    border-radius: 3px;
+}
+        /* --- ESTILO DAS LOGS DE SPAWN (RESTAURADO) --- */
+.log-item {
+    background: var(--surface); /* Fundo escuro transparente */
+    padding: 18px 25px;
+    border-radius: 18px;
+    margin-bottom: 12px;
+    display: grid;
+    grid-template-columns: 120px 1fr 140px; /* Alinhamento em colunas */
+    align-items: center;
+    border: 1px solid var(--border);
+    transition: 0.3s;
+}
+
+.log-item:hover {
+    border-color: var(--accent);
+    transform: translateX(5px);
+}
+
+/* Cor do Horário (AZUL) */
+.log-time { 
+    color: #007cf0 !important; 
+    font-family: 'JetBrains Mono', monospace; 
+    font-weight: 700; 
+    font-size: 14px;
+}
+
+/* Cor do Usuário (BRANCO) */
+.log-user { 
+    color: #ffffff !important; 
+    font-weight: 600; 
+    font-size: 15px;
+}
+/* Cor padrão do sino seguindo o cargo */
+.btn-bell i {
+    color: var(--role-accent) !important; 
+    transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    filter: drop-shadow(0 0 5px var(--role-accent));
+}
+
+/* Faz balançar quando passa o mouse */
+.btn-bell:hover i {
+    animation: bellShake 0.5s ease-in-out;
+    filter: drop-shadow(0 0 12px var(--role-accent));
+    transform: scale(1.1);
+}
+
+/* Efeito de "pulso" rápido quando clica */
+.btn-bell:active i {
+    transform: scale(0.9);
+    opacity: 0.7;
+}
+
+/* Mantemos a animação que já tínhamos */
+@keyframes bellShake {
+    0% { transform: rotate(0); }
+    25% { transform: rotate(15deg); }
+    50% { transform: rotate(-15deg); }
+    75% { transform: rotate(10deg); }
+    100% { transform: rotate(0); }
+}
+
+/* Classe que será aplicada via JS */
+.bell-animating {
+    animation: bellShake 0.6s ease-in-out;
+    color: var(--admin) !important; /* Fica vermelho enquanto brilha */
+    filter: drop-shadow(0 0 8px var(--admin));
+}
+
+/* Cor do Personagem/Spawn (VERDE - Ajustado) */
+.log-char { 
+    color: #00e676 !important; 
+    font-weight: 700; 
+    font-size: 13px; /* Diminuído de 15px para 13px */
+    text-align: right; 
+    text-transform: uppercase;
+    overflow: hidden;
+}
+
         .screen { padding: 40px 20px; max-width: 1100px; margin: 0 auto; display: none; }
         .screen.active { display: block; }
 
@@ -148,115 +327,446 @@
             border: 1px solid var(--border);
         }
 
-        .log-time { font-family: 'JetBrains Mono', monospace; color: var(--text-dim); font-size: 13px; }
-        .log-user { color: var(--accent); font-weight: 700; }
-        .log-char { background: rgba(255, 179, 0, 0.1); color: #ffb300; padding: 6px; border-radius: 8px; font-size: 11px; text-align: center; font-weight: 800; }
+        .bug-card {
+            background: var(--surface);
+            padding: 20px;
+            border-radius: 18px;
+            border: 1px solid var(--border);
+            margin-bottom: 15px;
+        }
 
-        .admin-card { background: var(--surface); padding: 30px; border-radius: 24px; border: 1px solid var(--border); margin-bottom: 30px; }
-        .btn-delete { background: rgba(255, 71, 87, 0.1); color: var(--admin); border: none; padding: 8px; border-radius: 8px; cursor: pointer; font-weight: 700; }
+        .cmd-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+.cmd-card {
+    background: rgba(255, 255, 255, 0.03);
+    padding: 15px;
+    border-radius: 14px;
+    border: 1px solid var(--border);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    text-align: center;
+    transition: 0.3s;
+    cursor: pointer;
+    color: var(--text-dim);
+}
+
+.cmd-card:hover {
+    border-color: var(--role-accent);
+    background: color-mix(in srgb, var(--role-accent), transparent 92%);
+    color: var(--role-accent);
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+}
+
+.cmd-card span {
+    font-weight: 700;
+}
+
+        .status-btn {
+            padding: 5px 10px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 800;
+            cursor: pointer;
+            border: none;
+            text-transform: uppercase;
+        }
+
+        .status-pending { background: rgba(255, 255, 255, 0.1); color: white; }
+        .status-fixing { background: rgba(0, 124, 240, 0.2); color: var(--accent); }
+        .status-fixed { background: rgba(0, 230, 118, 0.2); color: var(--success); }
+        .status-canceled { background: rgba(255, 71, 87, 0.2); color: var(--admin); }
+
+        /* Estilo para o input de arquivo */
+        .file-label {
+            display: block;
+            padding: 14px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px dashed var(--border);
+            border-radius: 14px;
+            text-align: center;
+            cursor: pointer;
+            color: var(--text-dim);
+            margin: 10px 0;
+        }
+        .file-label:hover { border-color: var(--accent); color: white; }
+        #bug-media { display: none; }
+
     </style>
 </head>
 <body>
 
-    <!-- TELA DE LOGIN (DESAPARECE TOTALMENTE) -->
     <div id="screen-login">
         <div class="login-box">
             <i class="fa-solid fa-shield-halved" style="font-size: 40px; color: var(--accent); margin-bottom: 20px;"></i>
-            <h2 style="margin-bottom: 5px;">Elite Access</h2>
-            <p style="color: var(--text-dim); font-size: 14px; margin-bottom: 30px;">Painel Restrito</p>
-            
-            <input type="text" id="user-input" placeholder="Usuário">
-            <input type="password" id="pass-input" placeholder="Senha">
-            <button class="btn-primary" onclick="tentarLogin()">Entrar</button>
+            <h2 style="margin-bottom: 5px;">Login</h2>
+            <p style="color: var(--text-dim); font-size: 14px; margin-bottom: 30px;">Heroes: New Lines</p>
+            <input type="text" id="user-input" placeholder="Username">
+            <input type="password" id="pass-input" placeholder="Password">
+            <button class="btn-primary" onclick="tentarLogin()">Sign In</button>
             <p id="error-msg" style="color: var(--admin); margin-top: 15px; display: none; font-size: 13px;"></p>
         </div>
     </div>
 
-    <!-- WRAPPER DO SISTEMA (SÓ APARECE APÓS LOGIN) -->
     <div id="main-wrapper">
         <nav class="navbar">
-            <div class="nav-logo"><i class="fa-solid fa-cube"></i> ELITE<span>LOGS</span></div>
+            <div class="nav-logo"><i class="fa-solid fa-cube"></i> HNL<span>TEAM</span></div>
             <div class="nav-actions">
-                <div class="session-badge"><div class="status-indicator"></div> <span id="display-name">USUÁRIO</span></div>
-                <button id="admin-btn" class="btn-nav-admin" style="display:none;" onclick="mudarTela('screen-dash', 'screen-admin')">Dono</button>
-                <button onclick="location.reload()" style="background:none; border:none; color:var(--text-dim); cursor:pointer;"><i class="fa-solid fa-power-off"></i></button>
+<button id="owner-bell" class="btn-bell" onclick="mudarTelaGlobal('screen-reports')" style="display: none; background: none; border: none; cursor: pointer; position: relative; padding: 5px;">
+    <i class="fa-solid fa-bell" style="color: #ffb300; font-size: 22px; filter: drop-shadow(0 0 5px rgba(255, 179, 0, 0.4));"></i>
+    <span id="bell-dot" style="display: none; position: absolute; top: 5px; right: 5px; width: 8px; height: 8px; background: red; border-radius: 50%; border: 2px solid var(--bg);"></span>
+</button>
+<button class="btn-nav-cmd" onclick="abrirTelaComandos()">
+    <i class="fa-solid fa-terminal"></i> Commands
+</button>
+ <div class="session-badge" id="nav-badge">
+    <div class="status-indicator"></div> 
+    <span id="display-name">USER</span>
+</div>
+<button id="admin-btn" onclick="mudarTelaGlobal('screen-admin')">
+    <i class="fa-solid fa-user-shield"></i> Painel
+</button>
             </div>
         </nav>
 
-        <!-- FEED -->
+        <!-- DASHBOARD -->
         <div id="screen-dash" class="screen active fade-in">
-            <h2 style="margin-bottom: 30px;">Atividade em Tempo Real</h2>
+            <h2 style="margin-bottom: 30px;">Real-Time Activity</h2>
             <div id="log-list"></div>
         </div>
 
-        <!-- ADMIN -->
-        <div id="screen-admin" class="screen fade-in">
-            <button onclick="mudarTela('screen-admin', 'screen-dash')" style="background:none; border:none; color:var(--text-dim); cursor:pointer; margin-bottom: 20px;"><i class="fa-solid fa-arrow-left"></i> Voltar</button>
-            <div class="admin-card">
-                <h3>Cadastrar Staff</h3>
-                <div style="display: grid; grid-template-columns: 1fr 1fr 150px; gap: 10px; margin-top: 15px;">
-                    <input type="text" id="new-user" placeholder="Login">
-                    <input type="text" id="new-pass" placeholder="Senha">
-                    <button onclick="criarNovoUsuario()" class="btn-primary" style="margin-top:10px;">Salvar</button>
+        <!-- COMANDOS (MOD/ADMIN) -->
+ <div id="screen-commands" class="screen fade-in">
+    <button onclick="mudarTelaGlobal('screen-dash')" style="background:none; border:none; color:var(--text-dim); cursor:pointer; margin-bottom: 20px;">
+        <i class="fa-solid fa-arrow-left"></i> Voltar
+    </button>
+    
+    <h2 style="margin-bottom: 10px;">Command Center</h2>
+    <p style="color: var(--text-dim); margin-bottom: 25px;">You can use these commands to give skin or characters.</p>
+
+    <!-- CATEGORIA: MORPHS ESPECIAIS -->
+    <h3 style="color: var(--role-accent); font-size: 14px; text-transform: uppercase; margin-bottom: 15px;">
+        <i class="fa-solid fa-star"></i> GiveSkin
+    </h3>
+    <div class="cmd-grid">
+        <div class="cmd-card"><span>:zee</span></div>
+        <div class="cmd-card"><span>:clea</span></div>
+        <div class="cmd-card"><span>:sakura</span></div>
+        <div class="cmd-card"><span>:carrie</span></div>
+        <div class="cmd-card"><span>:esdeath</span></div>
+        <div class="cmd-card"><span>:starlight</span></div>
+        <div class="cmd-card"><span>:promified</span></div>
+        <div class="cmd-card"><span>:promqueen</span></div>
+        <div class="cmd-card"><span>:promraven</span></div>
+        <div class="cmd-card"><span>:promdevil</span></div>
+        <div class="cmd-card"><span>:bride</span></div>
+        <div class="cmd-card"><span>:lordified</span></div>
+        <div class="cmd-card"><span>:goldified</span></div>
+        <div class="cmd-card"><span>:madisonfied</span></div>
+        <div class="cmd-card"><span>:devilfied</span></div>
+        <div class="cmd-card"><span>:sunnygwen</span></div>
+    </div>
+</div>
+
+<!-- TELA: TESTER (BUG REPORT) -->
+                <div id="screen-tester" class="content-screen">
+                    <div class="glass-panel" style="padding: 25px; border-radius: 20px;">
+                <h3 style="margin-bottom: 15px; color: var(--accent);">Report a Bug</h3>
+                <input type="text" id="bug-roblox" placeholder="Roblox Username">
+                <input type="text" id="bug-discord" placeholder="Discord ID">
+                <textarea id="bug-desc" placeholder="Which bug do I want to report?"></textarea>
+                
+                <label for="bug-media-input" class="file-label" id="file-label-text">
+                    <i class="fa-solid fa-cloud-arrow-up"></i> Click to Upload Photo or Video
+                </label>
+                <input type="file" id="bug-media-input" accept="video/*,image/*" onchange="document.getElementById('file-label-text').innerText = this.files[0].name" style="display:none;">
+                
+                <button class="btn-primary" onclick="enviarBug()">Submit Report</button>
+            </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+        <!-- TELA REPORTS (OWNER ONLY) -->
+        <div id="screen-reports" class="screen fade-in">
+            <button onclick="mudarTelaGlobal('screen-dash')" style="background:none; border:none; color:var(--text-dim); cursor:pointer; margin-bottom: 20px;">
+                <i class="fa-solid fa-arrow-left"></i> Back
+            </button>
+            
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2>Bug Reports</h2>
+                <!-- BARRA DE PESQUISA AGORA DENTRO DA TELA CERTA -->
+                <div style="position: relative; width: 300px;">
+                    <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: var(--accent);"></i>
+                    <input type="text" id="search-bug" placeholder="Search ID..." 
+                           onkeyup="filtrarReports()"
+                           style="padding: 10px 15px 10px 45px; margin: 0; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; font-size: 13px;">
                 </div>
             </div>
-            <h3>Contas Staff</h3>
-            <div id="staff-list"></div>
+
+            <div id="bug-list"></div>
+        </div>
+
+        <!-- ADMIN PANEL -->
+        <div id="screen-admin" class="screen fade-in">
+            <div class="admin-card" style="background:var(--surface); padding:30px; border-radius:24px; border:1px solid var(--border);">
+                <h3>Register Staff</h3>
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 150px; gap: 10px; margin-top: 15px;">
+                    <input type="text" id="new-user" placeholder="Login">
+                    <input type="text" id="new-pass" placeholder="Password">
+                    <select id="new-area">
+                        <option value="Tester">Tester</option>
+                        <option value="Moderator">Moderator</option>
+                        <option value="Administrator">Administrator</option>
+                        <option value="Owner">Owner</option>
+                    </select>
+                    <button onclick="criarNovoUsuario()" class="btn-primary" style="margin-top:10px;">Save</button>
+                </div>
+            </div>
+            <div id="staff-list" style="margin-top:30px;"></div>
         </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getDatabase, ref, onChildAdded, set, get, remove, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { getDatabase, ref, onChildAdded, set, get, remove, onValue, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
         const firebaseConfig = { databaseURL: "https://spawnlogs-default-rtdb.firebaseio.com/" };
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        window.tentarLogin = async () => {
-            const user = document.getElementById('user-input').value;
-            const pass = document.getElementById('pass-input').value;
-            const err = document.getElementById('error-msg');
+ const ROLES_CONFIG = {
+    "Owner": { 
+        color: "#ff4757", 
+        bg: "radial-gradient(circle at 50% -20%, #4a0000 0%, #050508 100%)", 
+        icon: "https://cdn.discordapp.com/attachments/1330306695833981090/1475598127120781342/f5feca6122cdd3c7ee6b6faffb3703e0.webp?ex=69c10118&is=69bfaf98&hm=b3210ea0646f8f9dc3fc9412d4cc407e44e27f69dec95d155552167c4c4d1419&" 
+    },
+    "Community Manager": { 
+        color: "#00eeee", 
+        bg: "radial-gradient(circle at 50% -20%, #003333 0%, #050508 100%)", 
+        icon: "https://cdn.discordapp.com/attachments/1330306695833981090/1475598343924224111/563b9913ad4df69958a1d03c6636d652.webp?ex=69c1014c&is=69bfafcc&hm=fae3431868f907c13ac73b85a9bd1c2e35e515377147b6cbe7a6109e5df9b1b6&" 
+    },
+    "Developer": { 
+        color: "#ff4757", 
+        bg: "radial-gradient(circle at 50% -20%, #4a0000 0%, #050508 100%)", 
+        icon: "https://cdn.discordapp.com/attachments/1330306695833981090/1475598086792286288/6aac53a72cf47b2b69a126deb721682c.png?ex=69c1010f&is=69bfaf8f&hm=9f9d018da0a7e4dd3836cdce6f73f7f8e4d00aa6b316dbaa9ad37a1d4b364366&" 
+    },
+    "Tester": { 
+        color: "#ff9f43", 
+        bg: "radial-gradient(circle at 50% -20%, #3d2b1f 0%, #050508 100%)", 
+        icon: "https://cdn.discordapp.com/attachments/1330306695833981090/1475598172926771260/ffac5738c27365803644d3206686574f.png?ex=69c10123&is=69bfafa3&hm=ac0640accbb7db178e2f168d3f5bd881882fb6f5bdf9fe2f213986382cf001dd&" 
+    },
+    "Moderator": { 
+        color: "#2e86de", 
+        bg: "radial-gradient(circle at 50% -20%, #1a3a5a 0%, #050508 100%)", 
+        icon: "https://cdn.discordapp.com/attachments/1330306695833981090/1475598125359038504/1e4e2ccb0f7ec42f2e0f708d2f82466b.png?ex=69c10118&is=69bfaf98&hm=78ca6771ac2941f68441ff9e5445f22b8e48dbdef3835fb749f762999397c59c&" 
+    }
+};
 
+        window.tentarLogin = async () => {
+            const user = document.getElementById('user-input').value.trim();
+            const pass = document.getElementById('pass-input').value.trim();
+            
             if (user === "meow" && pass === "2013") {
-                autorizar("DONO");
+                autorizar("meow", "Owner");
                 return;
             }
 
             const snap = await get(ref(db, 'staff_accounts/' + user));
             if (snap.exists() && snap.val().password === pass) {
-                autorizar(user.toUpperCase());
+                autorizar(user, snap.val().area);
             } else {
-                err.innerText = "Falha na autenticação";
-                err.style.display = "block";
+                document.getElementById('error-msg').innerText = "Incorrect Username/Password";
+                document.getElementById('error-msg').style.display = "block";
             }
         };
 
-        function autorizar(cargo) {
-            // 1. Remove o login da tela
-            document.getElementById('screen-login').style.display = 'none';
-            // 2. Mostra o sistema principal
-            document.getElementById('main-wrapper').style.display = 'block';
-            
-            document.getElementById('display-name').innerText = cargo;
-            if (cargo === "DONO") {
-                document.getElementById('admin-btn').style.display = "block";
-                carregarListaStaff();
-            }
-            carregarLogs();
+// Crie esta variável logo acima da função autorizar
+let userRole = ""; 
+
+// Função para fazer o sino tocar visualmente
+function notificarSino() {
+    const bell = document.getElementById('owner-bell');
+    if (bell) {
+        bell.classList.add('bell-animating');
+        
+        // Remove a classe após a animação acabar (0.6s) para poder repetir depois
+        setTimeout(() => {
+            bell.classList.remove('bell-animating');
+        }, 600);
+    }
+}
+
+// Ouvinte em tempo real para novos bugs
+// Coloque isso logo abaixo das suas outras funções de carregar lista
+onChildAdded(ref(db, 'bug_reports'), (snapshot) => {
+    // Só anima se o usuário logado for Owner
+  if (role === "Owner" || role === "Developer") {
+    const adminBtn = document.getElementById('admin-btn');
+    if (adminBtn) adminBtn.style.display = "flex"; // Usa flex para alinhar ícone e texto
+}})
+
+function autorizar(username, role) {
+    userRole = role; // Salva o cargo globalmente
+    const config = ROLES_CONFIG[role] || ROLES_CONFIG["Tester"];
+
+    // Aplica as cores no CSS
+    document.documentElement.style.setProperty('--role-accent', config.color);
+    document.documentElement.style.setProperty('--role-bg', config.bg);
+    
+    // Atualiza a barra com Ícone + Nome do Cargo
+    const badge = document.getElementById('nav-badge');
+    if (badge) {
+        badge.innerHTML = `
+            <img src="${config.icon}" class="role-icon-nav"> 
+            <span style="font-weight:800; color:white;">${role.toUpperCase()}</span>
+        `;
+    }
+
+    // Troca de tela (Esconde login e mostra o painel)
+    document.getElementById('screen-login').style.display = 'none';
+    document.getElementById('main-wrapper').style.display = 'block';
+
+    // --- LÓGICA DE DIRECIONAMENTO PÓS-LOGIN ---
+    if (role === "Tester") {
+        // Se for tester, vai direto para a tela de bugs e não carrega logs
+        mudarTelaGlobal('screen-tester');
+    } else {
+        // Se for Staff, vai para a Dashboard de logs
+        mudarTelaGlobal('screen-dash');
+        carregarLogs();
+    }
+
+    // Configurações extras de Owner/Dev
+    if (role === "Owner") {
+        document.getElementById('owner-bell').style.display = "block";
+        document.getElementById('admin-btn').style.display = "block";
+        carregarReports();
+        carregarListaStaff();
+    }
+    
+    if (role === "Developer") {
+        document.getElementById('admin-btn').style.display = "block";
+    }
+}
+
+        // ALTERAÇÃO: Função de envio convertendo arquivo para Base64
+window.enviarBug = async () => {
+    const fileInput = document.getElementById('bug-media-input');
+    const roblox = document.getElementById('bug-roblox').value;
+    const discord = document.getElementById('bug-discord').value;
+    const desc = document.getElementById('bug-desc').value;
+    
+    if(!desc) return alert("Please describe the bug!");
+
+    let mediaData = "";
+
+    // Converte o arquivo selecionado para Base64 (String)
+    if (fileInput.files.length > 0) {
+        mediaData = await new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve(reader.result);
+            reader.readAsDataURL(fileInput.files[0]);
+        });
+    }
+
+    const bugData = {
+        roblox: roblox,
+        discord: discord,
+        desc: desc,
+        media: mediaData, 
+        status: 'pending',
+        timestamp: Date.now()
+    };
+
+    try {
+        await set(ref(db, 'bug_reports/' + bugData.timestamp), bugData);
+        alert("Bug reported successfully!");
+        // Limpa os campos após enviar
+        document.querySelectorAll('#screen-tester input, #screen-tester textarea').forEach(i => i.value = "");
+        document.getElementById('file-label-text').innerText = "Click to Upload Photo or Video";
+    } catch (error) {
+        alert("Error sending report: " + error);
+    }
+};
+
+function carregarReports() {
+            onValue(ref(db, 'bug_reports'), (snapshot) => {
+                const list = document.getElementById('bug-list');
+                if (!list) return; // Segurança caso a div não exista
+                
+                list.innerHTML = ""; // Limpa a lista antes de carregar
+                
+                snapshot.forEach((child) => {
+                    const data = child.val();
+                    const id = child.key;
+                    
+                    // 1. Identifica se o arquivo é Vídeo ou Foto para usar a tag certa
+                    let mediaHtml = "";
+                    if (data.media) {
+                        if (data.media.includes("data:video")) {
+                            // Se for vídeo, usa a tag video
+                            mediaHtml = `
+                                <video controls style="width:100%; max-width:400px; border-radius:12px; margin-top:10px; border: 1px solid var(--border);">
+                                    <source src="${data.media}">
+                                </video>`;
+                        } else {
+                            // Se for foto (ou qualquer outra coisa), usa a tag img
+                            mediaHtml = `
+                                <img src="${data.media}" style="width:100%; max-width:400px; border-radius:12px; margin-top:10px; border: 1px solid var(--border);">
+                            `;
+                        }
+                    } else {
+                        mediaHtml = `<p style="font-size:12px; color:var(--text-dim); margin-top:10px;">No media attached</p>`;
+                    }
+
+                    // 2. Cria o card do bug (Garantindo que todos os </div> fechem)
+                    const div = document.createElement('div');
+                    div.className = 'bug-card fade-in';
+                    div.innerHTML = `
+                        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap: 15px;">
+                            <div style="flex: 1;">
+                                <p style="font-size: 14px;">
+                                    <b style="color:var(--accent)">@${data.roblox || 'Unknown'}</b> 
+                                    <span style="color:var(--text-dim)">|</span> 
+                                    <span style="color:var(--warning)">${data.discord || 'No Discord'}</span>
+                                </p>
+                                <p style="margin:10px 0; color:var(--text-main); line-height: 1.4;">${data.desc}</p>
+                                ${mediaHtml}
+                            </div>
+                            <button class="status-btn status-${data.status || 'pending'}" 
+                                    onclick="toggleStatus('${id}', '${data.status || 'pending'}')">
+                                ${data.status || 'pending'}
+                            </button>
+                        </div>
+                    `;
+                    list.prepend(div);
+                });
+            });
         }
 
-        window.criarNovoUsuario = async () => {
-            const u = document.getElementById('new-user').value;
-            const p = document.getElementById('new-pass').value;
-            if (u && p) {
-                await set(ref(db, 'staff_accounts/' + u), { password: p });
-                alert("Staff adicionado!");
-            }
+        window.toggleStatus = async (id, current) => {
+            const states = ['pending', 'fixing', 'fixed', 'canceled'];
+            let next = states[(states.indexOf(current) + 1) % states.length];
+            await update(ref(db, 'bug_reports/' + id), { status: next });
         };
 
-        window.excluirStaff = async (id) => {
-            if(confirm(`Remover ${id}?`)) await remove(ref(db, 'staff_accounts/' + id));
+        window.criarNovoUsuario = async () => {
+            const u = document.getElementById('new-user').value.trim();
+            const p = document.getElementById('new-pass').value.trim();
+            const a = document.getElementById('new-area').value;
+            if (u && p) {
+                await set(ref(db, 'staff_accounts/' + u), { password: p, area: a });
+                alert("Staff added!");
+            }
         };
 
         function carregarListaStaff() {
@@ -264,31 +774,61 @@
                 const list = document.getElementById('staff-list');
                 list.innerHTML = "";
                 snapshot.forEach((child) => {
-                    const id = child.key;
                     const div = document.createElement('div');
                     div.className = 'log-item';
-                    div.style.gridTemplateColumns = "1fr 1fr 100px";
-                    div.innerHTML = `<b>@${id}</b> <span style="color:var(--text-dim)">${child.val().password}</span> <button class="btn-delete" onclick="excluirStaff('${id}')">Remover</button>`;
+                    div.style.gridTemplateColumns = "1fr 1fr 1fr 100px";
+                    div.innerHTML = `<b>@${child.key}</b> <span style="color:var(--accent)">${child.val().area}</span> <span>${child.val().password}</span> <button class="btn-delete" style="color:var(--admin); border:none; background:none; cursor:pointer;" onclick="excluirStaff('${child.key}')">Remove</button>`;
                     list.appendChild(div);
                 });
             });
         }
 
+        window.excluirStaff = async (id) => { if(confirm(`Remove ${id}?`)) await remove(ref(db, 'staff_accounts/' + id)); };
+
         function carregarLogs() {
-            const list = document.getElementById('log-list');
             onChildAdded(ref(db, 'spawn_logs'), (snap) => {
                 const data = snap.val();
                 const div = document.createElement('div');
                 div.className = 'log-item fade-in';
-                div.innerHTML = `<span class="log-time">${new Date(data.timestamp*1000).toLocaleTimeString()}</span><span class="log-user">@${data.username}</span><span class="log-char">${data.character}</span>`;
-                list.prepend(div);
+                const timeStr = data.timestamp ? new Date(data.timestamp * 1000).toLocaleTimeString() : "--:--";
+                div.innerHTML = `<span class="log-time">${timeStr}</span><span class="log-user">@${data.username || 'System'}</span><span class="log-char">${data.character || 'N/A'}</span>`;
+                document.getElementById('log-list').prepend(div);
             });
         }
 
-        window.mudarTela = (e, m) => {
-            document.getElementById(e).classList.remove('active');
-            document.getElementById(m).classList.add('active');
+window.mudarTelaGlobal = (id) => {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+
+    // Se clicar no sino (ir para os reports), o ponto some
+    if (id === 'screen-reports') {
+        const dot = document.getElementById('bell-dot');
+        if (dot) dot.style.display = 'none';
+    }
+};
+
+        window.abrirTelaComandos = () => {
+            if(userRole === "Tester") mudarTelaGlobal('screen-tester');
+            else mudarTelaGlobal('screen-commands');
         };
+
+        window.filtrarReports = () => {
+    const termo = document.getElementById('search-bug').value.toLowerCase();
+    const cards = document.querySelectorAll('.bug-card');
+
+    cards.forEach(card => {
+        // Pega o texto do Roblox e do Discord dentro do card
+        const textoCard = card.innerText.toLowerCase();
+        
+        if (textoCard.includes(termo)) {
+            card.style.display = "block"; // Mostra se encontrar o ID
+            card.classList.add('fade-in');
+        } else {
+            card.style.display = "none"; // Esconde se não bater
+        }
+    });
+};
+
     </script>
 </body>
 </html>
